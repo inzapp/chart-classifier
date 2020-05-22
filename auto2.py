@@ -933,6 +933,8 @@ class MyApp(QWidget):
 
             #[s_y:e_y, s_x:e_x]
             if ocr(new_image_files[167:223, 239:445]) == 'Methacholine':
+                q = Queue()
+                processes = []
                 g_var['img_type'] = 'type01'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[9:33, 705:811])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[136:159, 721:805])))
@@ -1050,10 +1052,23 @@ class MyApp(QWidget):
                 processes.append(Process(target=ocr, args=(q, 'img_pef_pchg_lv4', new_image_files[616:641, 430:529])))
                 processes.append(Process(target=ocr, args=(q, 'img_pef_pchg_lv5', new_image_files[616:641, 542:597])))
                 processes.append(Process(target=ocr, args=(q, 'img_pef_pchg_lv6', new_image_files[616:641, 595:661])))
+
+                for p in processes:
+                    p.start()
+                for p in processes:
+                    p.join()
+                q.put(['END', True])
+                while True:
+                    q_val = q.get()
+                    if q_val[0] == 'END':
+                        break
+                    g_var[q_val[0]] = q_val[1]
                 type01_img_cnt += 1
                 pass
  
             elif ocr(new_image_files[177:217, 156:247]) == 'aridol':
+                q = Queue()
+                processes = []
                 g_var['img_type'] = 'type02'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[3:35, 710:817])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[134:160, 726:806])))
@@ -1219,10 +1234,24 @@ class MyApp(QWidget):
                 processes.append(Process(target=ocr, args=(q, 'img_pef_pchg_lv7', new_image_files[622:650, 689:743])))
                 processes.append(Process(target=ocr, args=(q, 'img_pef_pchg_lv8', new_image_files[622:650, 755:809])))
                 processes.append(Process(target=ocr, args=(q, 'img_pef_pchg_lv9', new_image_files[622:650, 817:865])))
+
+                for p in processes:
+                    p.start()
+                for p in processes:
+                    p.join()
+                q.put(['END', True])
+                while True:
+                    q_val = q.get()
+                    if q_val[0] == 'END':
+                        break
+                    g_var[q_val[0]] = q_val[1]
+                type01_img_cnt += 1
                 type02_img_cnt += 1
                 pass
           
             elif ocr(new_image_files[360:390, 38:111]) == 'Diffusing':
+                q = Queue()
+                processes = []
                 g_var['img_type'] = 'type03'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[54:83, 684:776])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[4:35, 712:801])))
@@ -1249,6 +1278,8 @@ class MyApp(QWidget):
                 pass
 
             elif ocr(new_image_files[266:295, 1:89]) == 'Spirometry':
+                q = Queue()
+                processes = []
                 g_var['img_type'] = 'type04'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[55:85, 685:770])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[3:36, 708:800])))
@@ -1380,10 +1411,24 @@ class MyApp(QWidget):
                 processes.append(Process(target=ocr, args=(q, 'img_sgaw_pref_pre', new_image_files[1089:1113, 453:509])))
                 processes.append(Process(target=ocr, args=(q, 'img_rawvtg_pre', new_image_files[1112:1133, 379:435])))
                 processes.append(Process(target=ocr, args=(q, 'img_rawf_pre', new_image_files[1131:1154, 384:445])))
+
+                for p in processes:
+                    p.start()
+                for p in processes:
+                    p.join()
+                q.put(['END', True])
+                while True:
+                    q_val = q.get()
+                    if q_val[0] == 'END':
+                        break
+                    g_var[q_val[0]] = q_val[1]
+                type01_img_cnt += 1
                 type04_img_cnt += 1
                 pass
 
             elif ocr(new_image_files[6:40, 245:367]) == 'CATHOLIC' and ocr(new_image_files[323:596, 657:914]) == '':
+                q = Queue()
+                processes = []
                 g_var['img_type'] = 'type05'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[120:150, 605:687])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[146:175, 625:707])))
@@ -1421,10 +1466,24 @@ class MyApp(QWidget):
                 processes.append(Process(target=ocr, args=(q, 'img_volextrap_pre', new_image_files[555:574, 487:524])))
                 processes.append(Process(target=ocr, args=(q, 'img_fvlecode_pre', new_image_files[572:588, 464:528])))
                 processes.append(Process(target=ocr, args=(q, 'img_mvv_pred', new_image_files[584:612, 357:404])))
+
+                for p in processes:
+                    p.start()
+                for p in processes:
+                    p.join()
+                q.put(['END', True])
+                while True:
+                    q_val = q.get()
+                    if q_val[0] == 'END':
+                        break
+                    g_var[q_val[0]] = q_val[1]
+                type01_img_cnt += 1
                 type05_img_cnt += 1
                 pass
 
             elif ocr(new_image_files[6:40, 245:367]) == 'CATHOLIC':
+                q = Queue()
+                processes = []
                 g_var['img_type'] = 'type06'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[120:150, 605:687])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[146:175, 625:707])))
@@ -1495,10 +1554,24 @@ class MyApp(QWidget):
                 processes.append(Process(target=ocr, args=(q, 'img_fvlecode_pre', new_image_files[575:597, 469:524])))
                 processes.append(Process(target=ocr, args=(q, 'img_fvlecode_post', new_image_files[575:597, 654:718])))
                 processes.append(Process(target=ocr, args=(q, 'img_mvv_pred', new_image_files[606:634, 357:412])))
+
+                for p in processes:
+                    p.start()
+                for p in processes:
+                    p.join()
+                q.put(['END', True])
+                while True:
+                    q_val = q.get()
+                    if q_val[0] == 'END':
+                        break
+                    g_var[q_val[0]] = q_val[1]
+                type01_img_cnt += 1
                 type06_img_cnt += 1
                 pass
 
             elif ocr(new_image_files[66:99, 538:647]) == 'REPORT':
+                q = Queue()
+                processes = []
                 g_var['img_type'] = 'type07'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[94:121, 601:693])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[118:142, 623:706])))
@@ -1630,10 +1703,24 @@ class MyApp(QWidget):
                 processes.append(Process(target=ocr, args=(q, 'img_fvlecode_tri6', new_image_files[635:650, 630:682])))
                 processes.append(Process(target=ocr, args=(q, 'img_fvlecode_tri7', new_image_files[635:650, 696:743])))
                 processes.append(Process(target=ocr, args=(q, 'img_fvlecode_tri8', new_image_files[635:650, 764:805])))
+
+                for p in processes:
+                    p.start()
+                for p in processes:
+                    p.join()
+                q.put(['END', True])
+                while True:
+                    q_val = q.get()
+                    if q_val[0] == 'END':
+                        break
+                    g_var[q_val[0]] = q_val[1]
+                type01_img_cnt += 1
                 type07_img_cnt += 1
                 pass
 
             elif ocr(new_image_files[266:303, 3:44]) == 'Lung':
+                q = Queue()
+                processes = []
                 g_var['img_type'] = 'type08'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[55:85, 685:770])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[3:36, 708:800])))
@@ -1679,17 +1766,29 @@ class MyApp(QWidget):
                 processes.append(Process(target=ocr, args=(q, 'img_sgaw_pref_pre', new_image_files[607:630, 451:503])))
                 processes.append(Process(target=ocr, args=(q, 'img_rawvtg_pre', new_image_files[628:648, 386:431])))
                 processes.append(Process(target=ocr, args=(q, 'img_rawf_pre', new_image_files[646:668, 391:430])))
+
+                for p in processes:
+                    p.start()
+                for p in processes:
+                    p.join()
+                q.put(['END', True])
+                while True:
+                    q_val = q.get()
+                    if q_val[0] == 'END':
+                        break
+                    g_var[q_val[0]] = q_val[1]
+                type01_img_cnt += 1
                 type08_img_cnt += 1
                 pass
 
             else:
-                img_type = 'typeUK'
+                g_var['img_type'] = 'typeUK'
                 typeUK_img_cnt += 1
                 pass
             
             # create new directory
             tmp_dir = new_path
-            new_path += "/" + img_type #new_path = tmp_dir + "/" + img_type
+            new_path += "/" + g_var['img_type'] #new_path = tmp_dir + "/" + g_var['img_type']
             
             if os.path.exists (new_path) == 0:
                 os.mkdir(new_path)
@@ -2108,7 +2207,7 @@ class MyApp(QWidget):
             wb.save(tmp_dir + "/OOMII.xlsx")
             
             # create new image
-            cv2.imwrite(new_path + "/" + img_type + "_" + img_name, new_image_files)
+            cv2.imwrite(new_path + "/" + g_var['img_type'] + "_" + img_name, new_image_files)
             new_path = tmp_dir
 
         self.label3.setText("Total: " + str(ori_image_files_counter) + "\n\n"
