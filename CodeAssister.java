@@ -15,16 +15,16 @@ public class CodeAssister {
 			if (line == null) {
 				break;
 			}
-			sb.append(line).append('\n');
-			if (line.indexOf(" = ") > -1) {
+			if (line.indexOf(" = ") > -1 && line.indexOf("ocr(") > -1) {
 				String[] sp = line.split(" = ");
-				if (sp.length >= 2 && sp[1].indexOf("(") > -1) {
-					String varName = sp[0].trim();
-					sp = sp[1].split("\\(");
-					if (sp.length >= 2 && sp[0].equals("pytesseract.image_to_string")) {
-						sb.append(String.format("                print(%s)", varName)).append('\n');
-					}
+				String varName = sp[0].trim();
+				if (sp.length >= 2 && sp[1].indexOf("ocr(") > -1) {
+					sp = sp[1].split("ocr\\(");
+					String submat = sp[1].split("\\)")[0];
+					sb.append(String.format("                processes.append(Process(target=ocr, args=(q, '%s', %s)))\n", varName, submat));
 				}
+			} else {
+				sb.append(line).append('\n');
 			}
 		}
 		br.close();
