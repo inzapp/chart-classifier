@@ -24,6 +24,7 @@ class MyApp(QWidget):
         self.label1.setText(ori_path)
         new_path = "C:/inz/after"
         self.label2.setText(new_path)
+        self.pushButtonForOpenImageFileClicked();
 
     def initUI(self):
         self.setGeometry(800, 200, 300, 300)
