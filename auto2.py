@@ -933,7 +933,7 @@ class MyApp(QWidget):
 
             #[s_y:e_y, s_x:e_x]
             if ocr(new_image_files[167:223, 239:445]) == 'Methacholine':
-                img_type = 'type01'
+                g_var['img_type'] = 'type01'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[9:33, 705:811])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[136:159, 721:805])))
                 processes.append(Process(target=ocr, args=(q, 'img_age', new_image_files[52:84, 709:745])))
@@ -1054,7 +1054,7 @@ class MyApp(QWidget):
                 pass
  
             elif ocr(new_image_files[177:217, 156:247]) == 'aridol':
-                img_type = 'type02'
+                g_var['img_type'] = 'type02'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[3:35, 710:817])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[134:160, 726:806])))
                 processes.append(Process(target=ocr, args=(q, 'img_age', new_image_files[56:85, 712:755])))
@@ -1223,7 +1223,7 @@ class MyApp(QWidget):
                 pass
           
             elif ocr(new_image_files[360:390, 38:111]) == 'Diffusing':
-                img_type = 'type03'
+                g_var['img_type'] = 'type03'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[54:83, 684:776])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[4:35, 712:801])))
                 processes.append(Process(target=ocr, args=(q, 'img_age', new_image_files[77:111, 695:737])))
@@ -1249,7 +1249,7 @@ class MyApp(QWidget):
                 pass
 
             elif ocr(new_image_files[266:295, 1:89]) == 'Spirometry':
-                img_type = 'type04'
+                g_var['img_type'] = 'type04'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[55:85, 685:770])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[3:36, 708:800])))
                 processes.append(Process(target=ocr, args=(q, 'img_age', new_image_files[83:108, 698:728])))
@@ -1384,7 +1384,7 @@ class MyApp(QWidget):
                 pass
 
             elif ocr(new_image_files[6:40, 245:367]) == 'CATHOLIC' and ocr(new_image_files[323:596, 657:914]) == '':
-                img_type = 'type05'
+                g_var['img_type'] = 'type05'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[120:150, 605:687])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[146:175, 625:707])))
                 processes.append(Process(target=ocr, args=(q, 'img_age', new_image_files[170:203, 91:131])))
@@ -1425,7 +1425,7 @@ class MyApp(QWidget):
                 pass
 
             elif ocr(new_image_files[6:40, 245:367]) == 'CATHOLIC':
-                img_type = 'type06'
+                g_var['img_type'] = 'type06'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[120:150, 605:687])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[146:175, 625:707])))
                 processes.append(Process(target=ocr, args=(q, 'img_age', new_image_files[170:203, 91:131])))
@@ -1499,7 +1499,7 @@ class MyApp(QWidget):
                 pass
 
             elif ocr(new_image_files[66:99, 538:647]) == 'REPORT':
-                img_type = 'type07'
+                g_var['img_type'] = 'type07'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[94:121, 601:693])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[118:142, 623:706])))
                 processes.append(Process(target=ocr, args=(q, 'img_age', new_image_files[139:161, 91:123])))
@@ -1634,7 +1634,7 @@ class MyApp(QWidget):
                 pass
 
             elif ocr(new_image_files[266:303, 3:44]) == 'Lung':
-                img_type = 'type08'
+                g_var['img_type'] = 'type08'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[55:85, 685:770])))
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[3:36, 708:800])))
                 processes.append(Process(target=ocr, args=(q, 'img_age', new_image_files[83:108, 698:728])))
