@@ -15,6 +15,50 @@ public class CodeAssister {
 			if (line == null) {
 				break;
 			}
+			if (line.indexOf("] = img_") > -1) {
+				String[] sp = line.split(" = ");
+				sb.append(String.format("%s = g_var['%s']\n", sp[0], sp[1]));
+			} else {
+				sb.append(line).append('\n');
+			}
+		}
+		br.close();
+		System.out.println(sb.toString());
+		FileOutputStream fos = new FileOutputStream(new File("auto2.py"));
+		fos.write(sb.toString().getBytes());
+		fos.close();
+	}
+	
+	private static void processGVar() throws Exception {
+		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("auto.py")));
+		StringBuilder sb = new StringBuilder();
+		while (true) {
+			String line = br.readLine();
+			if (line == null) {
+				break;
+			}
+			if (line.indexOf(" = \"\"") > -1 && line.indexOf("new_path") == -1) {
+				String varName = line.split(" = \"\"")[0].trim();
+				sb.append(String.format("            g_var['%s'] = \"\"\n", varName));
+			} else {
+				sb.append(line).append('\n');
+			}
+		}
+		br.close();
+		System.out.println(sb.toString());
+		FileOutputStream fos = new FileOutputStream(new File("auto2.py"));
+		fos.write(sb.toString().getBytes());
+		fos.close();
+	}
+	
+	private static void processAppend() throws Exception {
+		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("auto.py")));
+		StringBuilder sb = new StringBuilder();
+		while (true) {
+			String line = br.readLine();
+			if (line == null) {
+				break;
+			}
 			if (line.indexOf(" = ") > -1 && line.indexOf("ocr(") > -1) {
 				String[] sp = line.split(" = ");
 				String varName = sp[0].trim();
