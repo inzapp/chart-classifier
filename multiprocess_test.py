@@ -1,24 +1,24 @@
 from multiprocessing import Process, Queue, Value
+import pytesseract
 
 max_process_cnt = 10
 cur_process_cnt = 0
-global processes
 
+pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
 def process_ocr(submat):
     value = Value("d", 0.0, lock=False)
     p = Process(target=ocr, args=(submat, value))
     p.start()
     p.join()
     return value.value
-
-
-def ocr(q, key, submat):
-    q.put({key: submat + 1})
-    return
     
 
 if __name__ == "__main__":
-    global processes
+
+
+    def ocr(q, key, submat):
+        q.put({key: submat + 1})
+        return
     q = Queue()
     processes = []
     i = 0

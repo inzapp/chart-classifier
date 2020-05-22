@@ -12,6 +12,13 @@ import openpyxl
 from multiprocessing import Process, Queue
 
 pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
+
+def ocr(q, var_name, submat):
+    res = pytesseract.image_to_string(submat)
+    q.put([var_name, res])
+    print(res)
+    return res
+    
 class MyApp(QWidget):
     
     global ori_path, new_path, g_var
@@ -94,12 +101,6 @@ class MyApp(QWidget):
         # get grayscale image
         def grayscaling(mod_img):
             return cv2.cvtColor(mod_img, cv2.COLOR_BGR2GRAY)
-
-        def ocr(q, var_name, submat):
-            res = pytesseract.image_to_string(submat)
-            q.put([var_name, res])
-            print(res)
-            return res
 
         def ocr_for_title_searching(submat):
             res = pytesseract.image_to_string(submat)
@@ -944,9 +945,7 @@ class MyApp(QWidget):
                 processes = []
                 g_var['img_type'] = 'type01'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[9:33, 705:811])))
-                print(1)
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[136:159, 721:805])))
-                print(2)
                 processes.append(Process(target=ocr, args=(q, 'img_age', new_image_files[52:84, 709:745])))
                 processes.append(Process(target=ocr, args=(q, 'img_height', new_image_files[54:85, 864:906])))
                 processes.append(Process(target=ocr, args=(q, 'img_weight', new_image_files[80:110, 771:816])))
@@ -1063,13 +1062,10 @@ class MyApp(QWidget):
                 processes.append(Process(target=ocr, args=(q, 'img_pef_pchg_lv6', new_image_files[616:641, 595:661])))
 
                 for p in processes:
-                    print('start')
                     p.start()
-                
                 for p in processes:
                     p.join()
                 
-                print('join')
                 q.put(['END', True])
                 while True:
                     q_val = q.get()
