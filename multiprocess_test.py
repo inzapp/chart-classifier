@@ -2,6 +2,7 @@ from multiprocessing import Process, Queue, Value
 
 max_process_cnt = 10
 cur_process_cnt = 0
+global processes
 
 def process_ocr(submat):
     value = Value("d", 0.0, lock=False)
@@ -11,19 +12,20 @@ def process_ocr(submat):
     return value.value
 
 
-def ocr(map, key, submat):
-    map[key] = submat + 1
+def ocr(q, key, submat):
+    q.put({key: submat + 1})
     return
     
 
 if __name__ == "__main__":
-    map = {}
+    global processes
+    q = Queue()
     processes = []
     i = 0
     while True:
         if i >= 100:
             break
-        processes.append(Process(target=ocr, args=(map, 'tmp_key' + str(i), i)))
+        processes.append(Process(target=ocr, args=(q, 'tmp_key' + str(i), i)))
         print('append process')
         i += 1
         
@@ -35,5 +37,14 @@ if __name__ == "__main__":
         p.join()
         print('join process')
 
-    print(map)
+    q.put({'END': True})
+
+    while True:
+        q_val = q.get()
+        try:
+            if q_val['END'] == True:
+                break
+        except:
+            pass
+        print(q_val)
         
