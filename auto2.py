@@ -9,23 +9,25 @@ import numpy as np
 import glob
 import pytesseract
 import openpyxl
+from multiprocessing import Process, Queue
 
 pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
 class MyApp(QWidget):
     
-    global ori_path, new_path, g_val
+    global ori_path, new_path, g_var
     ori_path = new_path = ""
-    g_val = {}
+    g_var = {}
 
     def __init__(self):
         global ori_path, new_path
         super().__init__()
         self.initUI()
+
         ori_path = "C:/inz/before"
         self.label1.setText(ori_path)
         new_path = "C:/inz/after"
         self.label2.setText(new_path)
-        self.pushButtonForOpenImageFileClicked();
+        # self.pushButtonForOpenImageFileClicked()
 
     def initUI(self):
         self.setGeometry(800, 200, 300, 300)
@@ -71,7 +73,7 @@ class MyApp(QWidget):
         self.label2.setText(new_path)
 
     def pushButtonForOpenImageFileClicked(self):
-        global new_path, wb, ws, g_val
+        global new_path, wb, ws, g_var
  
         ori_image_files = glob.glob(ori_path + "/*.jpg")
         ori_image_files_counter = 0
@@ -96,6 +98,11 @@ class MyApp(QWidget):
         def ocr(q, var_name, submat):
             res = pytesseract.image_to_string(submat)
             q.put([var_name, res])
+            print(res)
+            return res
+
+        def ocr_for_title_searching(submat):
+            res = pytesseract.image_to_string(submat)
             print(res)
             return res
 
@@ -932,12 +939,14 @@ class MyApp(QWidget):
             ori_image_files_counter += 1
 
             #[s_y:e_y, s_x:e_x]
-            if ocr(new_image_files[167:223, 239:445]) == 'Methacholine':
+            if ocr_for_title_searching(new_image_files[167:223, 239:445]) == 'Methacholine':
                 q = Queue()
                 processes = []
                 g_var['img_type'] = 'type01'
                 processes.append(Process(target=ocr, args=(q, 'img_pid', new_image_files[9:33, 705:811])))
+                print(1)
                 processes.append(Process(target=ocr, args=(q, 'img_date', new_image_files[136:159, 721:805])))
+                print(2)
                 processes.append(Process(target=ocr, args=(q, 'img_age', new_image_files[52:84, 709:745])))
                 processes.append(Process(target=ocr, args=(q, 'img_height', new_image_files[54:85, 864:906])))
                 processes.append(Process(target=ocr, args=(q, 'img_weight', new_image_files[80:110, 771:816])))
@@ -1054,9 +1063,13 @@ class MyApp(QWidget):
                 processes.append(Process(target=ocr, args=(q, 'img_pef_pchg_lv6', new_image_files[616:641, 595:661])))
 
                 for p in processes:
+                    print('start')
                     p.start()
+                
                 for p in processes:
                     p.join()
+                
+                print('join')
                 q.put(['END', True])
                 while True:
                     q_val = q.get()
@@ -1066,7 +1079,7 @@ class MyApp(QWidget):
                 type01_img_cnt += 1
                 pass
  
-            elif ocr(new_image_files[177:217, 156:247]) == 'aridol':
+            elif ocr_for_title_searching(new_image_files[177:217, 156:247]) == 'aridol':
                 q = Queue()
                 processes = []
                 g_var['img_type'] = 'type02'
@@ -1249,7 +1262,7 @@ class MyApp(QWidget):
                 type02_img_cnt += 1
                 pass
           
-            elif ocr(new_image_files[360:390, 38:111]) == 'Diffusing':
+            elif ocr_for_title_searching(new_image_files[360:390, 38:111]) == 'Diffusing':
                 q = Queue()
                 processes = []
                 g_var['img_type'] = 'type03'
@@ -1277,7 +1290,7 @@ class MyApp(QWidget):
                 type03_img_cnt += 1
                 pass
 
-            elif ocr(new_image_files[266:295, 1:89]) == 'Spirometry':
+            elif ocr_for_title_searching(new_image_files[266:295, 1:89]) == 'Spirometry':
                 q = Queue()
                 processes = []
                 g_var['img_type'] = 'type04'
@@ -1426,7 +1439,7 @@ class MyApp(QWidget):
                 type04_img_cnt += 1
                 pass
 
-            elif ocr(new_image_files[6:40, 245:367]) == 'CATHOLIC' and ocr(new_image_files[323:596, 657:914]) == '':
+            elif ocr_for_title_searching(new_image_files[6:40, 245:367]) == 'CATHOLIC' and ocr_for_title_searching(new_image_files[323:596, 657:914]) == '':
                 q = Queue()
                 processes = []
                 g_var['img_type'] = 'type05'
@@ -1481,7 +1494,7 @@ class MyApp(QWidget):
                 type05_img_cnt += 1
                 pass
 
-            elif ocr(new_image_files[6:40, 245:367]) == 'CATHOLIC':
+            elif ocr_for_title_searching(new_image_files[6:40, 245:367]) == 'CATHOLIC':
                 q = Queue()
                 processes = []
                 g_var['img_type'] = 'type06'
@@ -1569,7 +1582,7 @@ class MyApp(QWidget):
                 type06_img_cnt += 1
                 pass
 
-            elif ocr(new_image_files[66:99, 538:647]) == 'REPORT':
+            elif ocr_for_title_searching(new_image_files[66:99, 538:647]) == 'REPORT':
                 q = Queue()
                 processes = []
                 g_var['img_type'] = 'type07'
@@ -1718,7 +1731,7 @@ class MyApp(QWidget):
                 type07_img_cnt += 1
                 pass
 
-            elif ocr(new_image_files[266:303, 3:44]) == 'Lung':
+            elif ocr_for_title_searching(new_image_files[266:303, 3:44]) == 'Lung':
                 q = Queue()
                 processes = []
                 g_var['img_type'] = 'type08'
