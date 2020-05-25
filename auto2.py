@@ -933,10 +933,10 @@ class MyApp(QWidget):
             new_image_files = cv2.imread(img)
             ori_image_files_counter += 1
 
+            q = Queue()
+            futures = []
             #[s_y:e_y, s_x:e_x]
             if ocr_for_title_searching(new_image_files[167:223, 239:445]) == 'Methacholine':
-                q = Queue()
-                futures = []
                 g_var['img_type'] = 'type01'
                 futures.append(pool.submit(ocr, (q, 'img_pid', new_image_files[9:33, 705:811])))
                 futures.append(pool.submit(ocr, (q, 'img_date', new_image_files[136:159, 721:805])))
@@ -1054,31 +1054,10 @@ class MyApp(QWidget):
                 futures.append(pool.submit(ocr, (q, 'img_pef_pchg_lv4', new_image_files[616:641, 430:529])))
                 futures.append(pool.submit(ocr, (q, 'img_pef_pchg_lv5', new_image_files[616:641, 542:597])))
                 futures.append(pool.submit(ocr, (q, 'img_pef_pchg_lv6', new_image_files[616:641, 595:661])))
-
-                print(3)
-                while True:
-                    c = 0
-                    for f in futures:
-                        print(f.done())
-                        if f.done() == True:
-                            c += 1
-                    if c == len(futures):
-                        break
-                
-                
-                print(4)
-                q.put(['END', True])
-                while True:
-                    q_val = q.get()
-                    if q_val[0] == 'END':
-                        break
-                    g_var[q_val[0]] = q_val[1]
                 type01_img_cnt += 1
                 pass
  
             elif ocr_for_title_searching(new_image_files[177:217, 156:247]) == 'aridol':
-                q = Queue()
-                futures = []
                 g_var['img_type'] = 'type02'
                 futures.append(pool.submit(ocr, (q, 'img_pid', new_image_files[3:35, 710:817])))
                 futures.append(pool.submit(ocr, (q, 'img_date', new_image_files[134:160, 726:806])))
@@ -1244,24 +1223,10 @@ class MyApp(QWidget):
                 futures.append(pool.submit(ocr, (q, 'img_pef_pchg_lv7', new_image_files[622:650, 689:743])))
                 futures.append(pool.submit(ocr, (q, 'img_pef_pchg_lv8', new_image_files[622:650, 755:809])))
                 futures.append(pool.submit(ocr, (q, 'img_pef_pchg_lv9', new_image_files[622:650, 817:865])))
-
-                for t in futures:
-                    t.start()
-                for t in futures:
-                    t.join()
-                q.put(['END', True])
-                while True:
-                    q_val = q.get()
-                    if q_val[0] == 'END':
-                        break
-                    g_var[q_val[0]] = q_val[1]
-                type01_img_cnt += 1
                 type02_img_cnt += 1
                 pass
           
             elif ocr_for_title_searching(new_image_files[360:390, 38:111]) == 'Diffusing':
-                q = Queue()
-                futures = []
                 g_var['img_type'] = 'type03'
                 futures.append(pool.submit(ocr, (q, 'img_pid', new_image_files[54:83, 684:776])))
                 futures.append(pool.submit(ocr, (q, 'img_date', new_image_files[4:35, 712:801])))
@@ -1288,8 +1253,6 @@ class MyApp(QWidget):
                 pass
 
             elif ocr_for_title_searching(new_image_files[266:295, 1:89]) == 'Spirometry':
-                q = Queue()
-                futures = []
                 g_var['img_type'] = 'type04'
                 futures.append(pool.submit(ocr, (q, 'img_pid', new_image_files[55:85, 685:770])))
                 futures.append(pool.submit(ocr, (q, 'img_date', new_image_files[3:36, 708:800])))
@@ -1421,24 +1384,10 @@ class MyApp(QWidget):
                 futures.append(pool.submit(ocr, (q, 'img_sgaw_pref_pre', new_image_files[1089:1113, 453:509])))
                 futures.append(pool.submit(ocr, (q, 'img_rawvtg_pre', new_image_files[1112:1133, 379:435])))
                 futures.append(pool.submit(ocr, (q, 'img_rawf_pre', new_image_files[1131:1154, 384:445])))
-
-                for t in futures:
-                    t.start()
-                for t in futures:
-                    t.join()
-                q.put(['END', True])
-                while True:
-                    q_val = q.get()
-                    if q_val[0] == 'END':
-                        break
-                    g_var[q_val[0]] = q_val[1]
-                type01_img_cnt += 1
                 type04_img_cnt += 1
                 pass
 
             elif ocr_for_title_searching(new_image_files[6:40, 245:367]) == 'CATHOLIC' and ocr_for_title_searching(new_image_files[323:596, 657:914]) == '':
-                q = Queue()
-                futures = []
                 g_var['img_type'] = 'type05'
                 futures.append(pool.submit(ocr, (q, 'img_pid', new_image_files[120:150, 605:687])))
                 futures.append(pool.submit(ocr, (q, 'img_date', new_image_files[146:175, 625:707])))
@@ -1476,24 +1425,10 @@ class MyApp(QWidget):
                 futures.append(pool.submit(ocr, (q, 'img_volextrap_pre', new_image_files[555:574, 487:524])))
                 futures.append(pool.submit(ocr, (q, 'img_fvlecode_pre', new_image_files[572:588, 464:528])))
                 futures.append(pool.submit(ocr, (q, 'img_mvv_pred', new_image_files[584:612, 357:404])))
-
-                for t in futures:
-                    t.start()
-                for t in futures:
-                    t.join()
-                q.put(['END', True])
-                while True:
-                    q_val = q.get()
-                    if q_val[0] == 'END':
-                        break
-                    g_var[q_val[0]] = q_val[1]
-                type01_img_cnt += 1
                 type05_img_cnt += 1
                 pass
 
             elif ocr_for_title_searching(new_image_files[6:40, 245:367]) == 'CATHOLIC':
-                q = Queue()
-                futures = []
                 g_var['img_type'] = 'type06'
                 futures.append(pool.submit(ocr, (q, 'img_pid', new_image_files[120:150, 605:687])))
                 futures.append(pool.submit(ocr, (q, 'img_date', new_image_files[146:175, 625:707])))
@@ -1564,24 +1499,10 @@ class MyApp(QWidget):
                 futures.append(pool.submit(ocr, (q, 'img_fvlecode_pre', new_image_files[575:597, 469:524])))
                 futures.append(pool.submit(ocr, (q, 'img_fvlecode_post', new_image_files[575:597, 654:718])))
                 futures.append(pool.submit(ocr, (q, 'img_mvv_pred', new_image_files[606:634, 357:412])))
-
-                for t in futures:
-                    t.start()
-                for t in futures:
-                    t.join()
-                q.put(['END', True])
-                while True:
-                    q_val = q.get()
-                    if q_val[0] == 'END':
-                        break
-                    g_var[q_val[0]] = q_val[1]
-                type01_img_cnt += 1
                 type06_img_cnt += 1
                 pass
 
             elif ocr_for_title_searching(new_image_files[66:99, 538:647]) == 'REPORT':
-                q = Queue()
-                futures = []
                 g_var['img_type'] = 'type07'
                 futures.append(pool.submit(ocr, (q, 'img_pid', new_image_files[94:121, 601:693])))
                 futures.append(pool.submit(ocr, (q, 'img_date', new_image_files[118:142, 623:706])))
@@ -1713,24 +1634,10 @@ class MyApp(QWidget):
                 futures.append(pool.submit(ocr, (q, 'img_fvlecode_tri6', new_image_files[635:650, 630:682])))
                 futures.append(pool.submit(ocr, (q, 'img_fvlecode_tri7', new_image_files[635:650, 696:743])))
                 futures.append(pool.submit(ocr, (q, 'img_fvlecode_tri8', new_image_files[635:650, 764:805])))
-
-                for t in futures:
-                    t.start()
-                for t in futures:
-                    t.join()
-                q.put(['END', True])
-                while True:
-                    q_val = q.get()
-                    if q_val[0] == 'END':
-                        break
-                    g_var[q_val[0]] = q_val[1]
-                type01_img_cnt += 1
                 type07_img_cnt += 1
                 pass
 
             elif ocr_for_title_searching(new_image_files[266:303, 3:44]) == 'Lung':
-                q = Queue()
-                futures = []
                 g_var['img_type'] = 'type08'
                 futures.append(pool.submit(ocr, (q, 'img_pid', new_image_files[55:85, 685:770])))
                 futures.append(pool.submit(ocr, (q, 'img_date', new_image_files[3:36, 708:800])))
@@ -1776,18 +1683,6 @@ class MyApp(QWidget):
                 futures.append(pool.submit(ocr, (q, 'img_sgaw_pref_pre', new_image_files[607:630, 451:503])))
                 futures.append(pool.submit(ocr, (q, 'img_rawvtg_pre', new_image_files[628:648, 386:431])))
                 futures.append(pool.submit(ocr, (q, 'img_rawf_pre', new_image_files[646:668, 391:430])))
-
-                for t in futures:
-                    t.start()
-                for t in futures:
-                    t.join()
-                q.put(['END', True])
-                while True:
-                    q_val = q.get()
-                    if q_val[0] == 'END':
-                        break
-                    g_var[q_val[0]] = q_val[1]
-                type01_img_cnt += 1
                 type08_img_cnt += 1
                 pass
 
@@ -1795,6 +1690,24 @@ class MyApp(QWidget):
                 g_var['img_type'] = 'typeUK'
                 typeUK_img_cnt += 1
                 pass
+            
+            print(3)
+            while True:
+                c = 0
+                for f in futures:
+                    print(f.done())
+                    if f.done() == True:
+                        c += 1
+                if c == len(futures):
+                    break
+            
+            print(4)
+            q.put(['END', True])
+            while True:
+                q_val = q.get()
+                if q_val[0] == 'END':
+                    break
+                g_var[q_val[0]] = q_val[1]
             
             # create new directory
             tmp_dir = new_path
