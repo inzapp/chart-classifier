@@ -1691,7 +1691,6 @@ class MyApp(QWidget):
                 typeUK_img_cnt += 1
                 pass
             
-            print(3)
             while True:
                 c = 0
                 for f in futures:
@@ -1701,7 +1700,6 @@ class MyApp(QWidget):
                 if c == len(futures):
                     break
             
-            print(4)
             q.put(['END', True])
             while True:
                 q_val = q.get()
