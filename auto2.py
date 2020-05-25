@@ -986,32 +986,18 @@ class MyApp(QWidget):
                 fs.append(pool.submit(ocr, q, 'img_weight', new_image_files[80:110, 771:816]))
                 fs.append(pool.submit(ocr, q, 'img_gender', new_image_files[77:112, 893:965]))
 
-                for i in range(1, 6 + 1):
-                    fs.append(pool.submit(ocr, q, 'img_fvc_dose_lv' + str(i), methacholine(new_image_files, 'lv' + str(i), 'fvc_dose')))
-
                 fs.append(pool.submit(ocr, q, 'img_fvc_ref', methacholine(new_image_files, 'ref', 'fvc_liters')))
                 fs.append(pool.submit(ocr, q, 'img_fvc_pre', methacholine(new_image_files, 'pre', 'fvc_liters')))
-                for i in range(1, 6 + 1):
-                    fs.append(pool.submit(ocr, q, 'img_fvc_lv' + str(i), methacholine(new_image_files, 'lv' + str(i), 'fvc_liters')))
-                    
                 fs.append(pool.submit(ocr, q, 'img_fcv_prev_pre', methacholine(new_image_files, 'pre', 'fvc_pref')))
+                fs.append(pool.submit(ocr, q, 'img_fev1_ref', methacholine(new_image_files, 'ref', 'fev1_dose')))
+                fs.append(pool.submit(ocr, q, 'img_fev1_pre', methacholine(new_image_files, 'pre', 'fev1_dose')))
                 for i in range(1, 6 + 1):
+                    fs.append(pool.submit(ocr, q, 'img_fvc_dose_lv' + str(i), methacholine(new_image_files, 'lv' + str(i), 'fvc_dose')))
+                    fs.append(pool.submit(ocr, q, 'img_fvc_lv' + str(i), methacholine(new_image_files, 'lv' + str(i), 'fvc_liters')))
                     fs.append(pool.submit(ocr, q, 'img_fvc_pref_lv' + str(i), methacholine(new_image_files, 'lv' + str(i), 'fvc_pref')))
+                    fs.append(pool.submit(ocr, q, 'img_fvc_pchg_lv' + str(i), methacholine(new_image_files, 'lv' + str(i), 'fvc_pchg')))
+                    fs.append(pool.submit(ocr, q, 'img_fev1_dose_lv' + str(i), methacholine(new_image_files, 'lv' + str(i), 'fev1_dose')))
                     
-                fs.append(pool.submit(ocr, q, 'img_fvc_pchg_lv1', new_image_files[344:368, 254:329]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pchg_lv2', new_image_files[344:368, 342:396]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pchg_lv3', new_image_files[344:368, 411:466]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pchg_lv4', new_image_files[344:368, 430:529]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pchg_lv5', new_image_files[344:368, 542:597]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pchg_lv6', new_image_files[344:368, 596:661]))
-                fs.append(pool.submit(ocr, q, 'img_fev1_dose_lv1', new_image_files[372:399, 255:335]))
-                fs.append(pool.submit(ocr, q, 'img_fev1_dose_lv2', new_image_files[372:399, 342:396]))
-                fs.append(pool.submit(ocr, q, 'img_fev1_dose_lv3', new_image_files[372:399, 411:466]))
-                fs.append(pool.submit(ocr, q, 'img_fev1_dose_lv4', new_image_files[372:399, 430:529]))
-                fs.append(pool.submit(ocr, q, 'img_fev1_dose_lv5', new_image_files[372:399, 542:597]))
-                fs.append(pool.submit(ocr, q, 'img_fev1_dose_lv6', new_image_files[372:399, 595:661]))
-                fs.append(pool.submit(ocr, q, 'img_fev1_ref', new_image_files[396:420, 142:199]))
-                fs.append(pool.submit(ocr, q, 'img_fev1_pre', new_image_files[396:420, 211:268]))
                 fs.append(pool.submit(ocr, q, 'img_fev1_lv1', new_image_files[396:420, 255:335]))
                 fs.append(pool.submit(ocr, q, 'img_fev1_lv2', new_image_files[396:420, 342:396]))
                 fs.append(pool.submit(ocr, q, 'img_fev1_lv3', new_image_files[396:420, 422:466]))
