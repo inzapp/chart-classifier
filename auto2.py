@@ -938,6 +938,40 @@ class MyApp(QWidget):
             fs = []
             #[s_y:e_y, s_x:e_x]
             if ocr_for_title_searching(new_image_files[167:223, 239:445]) == 'Methacholine':
+                w = 41
+                h = 20
+                dose_h_offset = 23
+
+                pos = {}
+                pos['ref'] = 150
+                pos['pre'] = 221
+                pos['lv1'] = 287
+                pos['lv2'] = 354
+                pos['lv3'] = 421
+                pos['lv4'] = 488
+                pos['lv5'] = 554
+                pos['lv6'] = 620
+
+                pos['fvc_dose'] = 288
+                pos['fvc_liters'] = 308
+                pos['fvc_pref'] = 331
+                pos['fvc_pchg'] = 351
+
+                pos['fev1_dose'] = 382
+                pos['fev1_liters'] = 403
+                pos['fev1_pref'] = 422
+                pos['fev1_pchg'] = 444
+
+                pos['fef_25_75_dose'] = 473
+                pos['fef_25_75_per'] = 494
+                pos['fef_25_75_pref'] = 519
+                pos['fef_25_75_pchg'] = 539
+
+                pos['pef_dose'] = 564
+                pos['pef_l_sec'] = 585
+                pos['pef_pref'] = 605
+                pos['pef_pchg'] = 626
+
                 g_var['img_type'] = 'type01'
                 fs.append(pool.submit(ocr, q, 'img_pid', new_image_files[9:33, 705:811]))
                 fs.append(pool.submit(ocr, q, 'img_date', new_image_files[136:159, 721:805]))
@@ -945,12 +979,11 @@ class MyApp(QWidget):
                 fs.append(pool.submit(ocr, q, 'img_height', new_image_files[54:85, 864:906]))
                 fs.append(pool.submit(ocr, q, 'img_weight', new_image_files[80:110, 771:816]))
                 fs.append(pool.submit(ocr, q, 'img_gender', new_image_files[77:112, 893:965]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_dose_lv1', new_image_files[279:306, 255:335]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_dose_lv2', new_image_files[281:306, 342:396]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_dose_lv3', new_image_files[282:305, 411:466]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_dose_lv4', new_image_files[281:307, 430:529]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_dose_lv5', new_image_files[284:306, 542:597]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_dose_lv6', new_image_files[285:305, 595:661]))
+
+                for i in range(1, 6 + 1):
+                    sub = new_image_files[pos['fvc_dose']:pos['fvc_dose']+h, pos['lv' + str(i)]-dose_h_offset:pos['lv' + str(i)] + w]
+                    fs.append(pool.submit(ocr, q, 'img_fvc_dose_lv' + str(i), sub))
+                    
                 fs.append(pool.submit(ocr, q, 'img_fvc_ref', new_image_files[303:328, 142:199]))
                 fs.append(pool.submit(ocr, q, 'img_fvc_pre', new_image_files[303:328, 211:268]))
                 fs.append(pool.submit(ocr, q, 'img_fvc_lv1', new_image_files[303:328, 255:335]))

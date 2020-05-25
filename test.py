@@ -43,4 +43,12 @@ for i in range(1, 6 + 1):
     cv2.imshow('img', img[pos['fvc_dose']:pos['fvc_dose'] + h, pos['lv' + str(i)] - dose_h_offset :pos['lv' + str(i)] + w])
     cv2.waitKey(0)
     
+for i in range(1, 6 + 1):
+    cv2.imshow('img', img[pos['fvc_pref']:pos['fvc_pref'] + h, pos['lv' + str(i)]:pos['lv' + str(i)] + w])
+    cv2.waitKey(0)
+    
+for i in range(1, 6 + 1):
+    cv2.imshow('img', img[pos['fvc_pchg']:pos['fvc_pchg'] + h, pos['lv' + str(i)]:pos['lv' + str(i)] + w])
+    cv2.waitKey(0)
+    
 cv2.destroyAllWindows()
