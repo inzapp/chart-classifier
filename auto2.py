@@ -25,7 +25,7 @@ class MyApp(QWidget):
     global ori_path, new_path, g_var, pool
     ori_path = new_path = ""
     g_var = {}
-    pool = ThreadPoolExecutor(4)
+    pool = ThreadPoolExecutor(9)
 
     def __init__(self):
         global ori_path, new_path
@@ -1695,7 +1695,6 @@ class MyApp(QWidget):
             # while True:
             #     c = 0
             #     for f in fs:
-            #         print(f.done())
             #         if f.done() == True:
             #             c += 1
             #     if c == len(fs):
