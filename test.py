@@ -34,6 +34,12 @@ pos['pef_l_sec'] = 585
 pos['pef_pref'] = 605
 pos['pef_pchg'] = 626
 
+def submat(img, x_pos_title, y_pos_title):
+    if y_pos_title.find('dose') > -1:
+        return img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]-dose_h_offset:pos[x_pos_title]+w]
+    else
+        return img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]:pos[x_pos_title]+w]
+
 img = cv2.imread('1.jpg', cv2.IMREAD_COLOR)
 for i in range(1, 6 + 1):
     cv2.imshow('img', img[pos['fvc_liters']:pos['fvc_liters'] + h, pos['lv' + str(i)]:pos['lv' + str(i)] + w])
