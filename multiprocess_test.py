@@ -1,50 +1,15 @@
-from multiprocessing import Process, Queue, Value
-import pytesseract
+from concurrent.futures import ThreadPoolExecutor
+pool = ThreadPoolExecutor(4)
 
-max_process_cnt = 10
-cur_process_cnt = 0
-
-pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
-def process_ocr(submat):
-    value = Value("d", 0.0, lock=False)
-    p = Process(target=ocr, args=(submat, value))
-    p.start()
-    p.join()
-    return value.value
+def task(param1, param2):
+    return param2
     
 
 if __name__ == "__main__":
+    fs = []
+    fs.append(pool.submit(task, '1', '2'))
+    fs.append(pool.submit(task, ('2', '3')))
+    fs.append(pool.submit(task, ('2', '3')))
 
-
-    def ocr(q, key, submat):
-        q.put({key: submat + 1})
-        return
-    q = Queue()
-    processes = []
-    i = 0
-    while True:
-        if i >= 100:
-            break
-        processes.append(Process(target=ocr, args=(q, 'tmp_key' + str(i), i)))
-        print('append process')
-        i += 1
-        
-    for p in processes:
-        p.start()
-        print('start process')
-        
-    for p in processes:
-        p.join()
-        print('join process')
-
-    q.put({'END': True})
-
-    while True:
-        q_val = q.get()
-        try:
-            if q_val['END'] == True:
-                break
-        except:
-            pass
-        print(q_val)
-        
+    for f in fs:
+        print(f.result())
