@@ -18,14 +18,14 @@ def ocr(q, var_name, submat):
     res = pytesseract.image_to_string(submat)
     q.put([var_name, res])
     print(res)
-    return res
+    return
 
 class MyApp(QWidget):
     
     global ori_path, new_path, g_var, pool
     ori_path = new_path = ""
     g_var = {}
-    pool = ThreadPoolExecutor(9)
+    pool = ThreadPoolExecutor(8)
 
     def __init__(self):
         global ori_path, new_path
@@ -1691,17 +1691,9 @@ class MyApp(QWidget):
                 g_var['img_type'] = 'typeUK'
                 typeUK_img_cnt += 1
                 pass
-            
-            # while True:
-            #     c = 0
-            #     for f in fs:
-            #         if f.done() == True:
-            #             c += 1
-            #     if c == len(fs):
-            #         break
                 
             for f in fs:
-                print(f.result())
+                f.result()
             
             q.put(['END', True])
             while True:
