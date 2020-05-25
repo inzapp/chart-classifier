@@ -15,9 +15,9 @@ public class CodeAssister {
 			if (line == null) {
 				break;
 			}
-			if (line.indexOf("] = img_") > -1) {
-				String[] sp = line.split(" = ");
-				sb.append(String.format("%s = g_var['%s']\n", sp[0], sp[1]));
+			if (line.indexOf("fs.append") > -1) {
+				String[] sp = line.split("ocr, \\(");
+				sb.append(sp[0]).append("ocr, ").append(sp[1].substring(0, sp[1].length() - 1)).append('\n');
 			} else {
 				sb.append(line).append('\n');
 			}
