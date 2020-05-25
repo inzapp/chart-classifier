@@ -117,12 +117,12 @@ class MyApp(QWidget):
             pos['lv5'] = 554
             pos['lv6'] = 620
 
-            pos['fvc_dose'] = 288
+            pos['fvc_dose'] = 286
             pos['fvc_liters'] = 308
-            pos['fvc_pref'] = 331
+            pos['fvc_pref'] = 329
             pos['fvc_pchg'] = 351
 
-            pos['fev1_dose'] = 382
+            pos['fev1_dose'] = 380
             pos['fev1_liters'] = 403
             pos['fev1_pref'] = 422
             pos['fev1_pchg'] = 444
