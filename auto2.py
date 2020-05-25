@@ -994,19 +994,10 @@ class MyApp(QWidget):
                 for i in range(1, 6 + 1):
                     fs.append(pool.submit(ocr, q, 'img_fvc_lv' + str(i), methacholine(new_image_files, 'lv' + str(i), 'fvc_liters')))
                     
-                fs.append(pool.submit(ocr, q, 'img_fvc_lv1', new_image_files[303:328, 255:335]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_lv2', new_image_files[303:328, 342:396]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_lv3', new_image_files[303:328, 411:466]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_lv4', new_image_files[303:328, 430:529]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_lv5', new_image_files[303:328, 542:597]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_lv6', new_image_files[303:328, 595:661]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pref_pre', new_image_files[325:350, 211:268]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pref_lv1', new_image_files[325:350, 255:335]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pref_lv2', new_image_files[325:350, 342:396]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pref_lv3', new_image_files[325:350, 411:466]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pref_lv4', new_image_files[325:350, 430:529]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pref_lv5', new_image_files[325:350, 542:597]))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pref_lv6', new_image_files[325:350, 595:661]))
+                fs.append(pool.submit(ocr, q, 'img_fcv_prev_pre', methacholine(new_image_files, 'pre', 'fvc_pref')))
+                for i in range(1, 6 + 1):
+                    fs.append(pool.submit(ocr, q, 'img_fvc_pref_lv' + str(i), methacholine(new_image_files, 'lv' + str(i), 'fvc_pref')))
+                    
                 fs.append(pool.submit(ocr, q, 'img_fvc_pchg_lv1', new_image_files[344:368, 254:329]))
                 fs.append(pool.submit(ocr, q, 'img_fvc_pchg_lv2', new_image_files[344:368, 342:396]))
                 fs.append(pool.submit(ocr, q, 'img_fvc_pchg_lv3', new_image_files[344:368, 411:466]))
