@@ -25,9 +25,9 @@ def methacholine(img, x_pos_title, y_pos_title):
     pos['fev1_dose'] = 380
     pos['fev1_liters'] = 403
     pos['fev1_pref'] = 422
-    pos['fev1_pchg'] = 444
+    pos['fev1_pchg'] = 442
 
-    pos['fef_25_75_dose'] = 473
+    pos['fef_25_75_dose'] = 470
     pos['fef_25_75_per'] = 494
     pos['fef_25_75_pref'] = 519
     pos['fef_25_75_pchg'] = 539
@@ -43,6 +43,7 @@ def methacholine(img, x_pos_title, y_pos_title):
         img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]:pos[x_pos_title]+w]
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img = cv2.copyMakeBorder(img, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=[255, 255, 255])
     return img
 
 x_pos = [
@@ -79,8 +80,26 @@ y_pos = [
 ]
 
 img = cv2.imread('1.jpg', cv2.IMREAD_COLOR)
+# for i in range(1, 6 + 1):
+#     sub = methacholine(img, 'lv' + str(i), 'fvc_dose')
+#     cv2.imshow('img', sub)
+#     print(pytesseract.image_to_string(sub))
+#     cv2.waitKey(0)
+
+# for i in range(1, 6 + 1):
+#     sub = methacholine(img, 'lv' + str(i), 'fvc_liters')
+#     cv2.imshow('img', sub)
+#     print(pytesseract.image_to_string(sub))
+#     cv2.waitKey(0)
+    
+# for i in range(1, 6 + 1):
+#     sub = methacholine(img, 'lv' + str(i), 'fev1_pref')
+#     cv2.imshow('img', sub)
+#     print(pytesseract.image_to_string(sub))
+#     cv2.waitKey(0)
+    
 for i in range(1, 6 + 1):
-    sub = methacholine(img, 'lv' + str(i), 'fev1_dose')
+    sub = methacholine(img, 'lv' + str(i), 'fev1_pchg')
     cv2.imshow('img', sub)
     print(pytesseract.image_to_string(sub))
     cv2.waitKey(0)

@@ -120,14 +120,14 @@ class MyApp(QWidget):
             pos['fvc_dose'] = 286
             pos['fvc_liters'] = 308
             pos['fvc_pref'] = 329
-            pos['fvc_pchg'] = 351
+            pos['fvc_pchg'] = 349
 
             pos['fev1_dose'] = 380
             pos['fev1_liters'] = 403
             pos['fev1_pref'] = 422
-            pos['fev1_pchg'] = 444
+            pos['fev1_pchg'] = 442
 
-            pos['fef_25_75_dose'] = 473
+            pos['fef_25_75_dose'] = 470
             pos['fef_25_75_per'] = 494
             pos['fef_25_75_pref'] = 519
             pos['fef_25_75_pchg'] = 539
@@ -138,9 +138,13 @@ class MyApp(QWidget):
             pos['pef_pchg'] = 626
 
             if y_pos_title.find('dose') > -1:
-                return img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]-dose_h_offset:pos[x_pos_title]+w]
+                img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]-dose_h_offset:pos[x_pos_title]+w]
             else:
-                return img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]:pos[x_pos_title]+w]
+                img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]:pos[x_pos_title]+w]
+
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            img = cv2.copyMakeBorder(img, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=[255, 255, 255])
+            return img
 
         # create new excel file 
         if os.path.isfile(new_path + '/OOMII.xlsx') == 0:
