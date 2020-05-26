@@ -38,7 +38,7 @@ def methacholine(img, x_pos_title, y_pos_title):
     # col pos
     pos['ref'] = 132
     pos['pre'] = 199
-    pos['lv1'] = 264
+    pos['lv1'] = 265
     pos['lv2'] = 331
     pos['lv3'] = 397
     pos['lv4'] = 464
@@ -65,7 +65,6 @@ def methacholine(img, x_pos_title, y_pos_title):
     pos['pef_l_sec'] = 580
     pos['pef_pref'] = 599
     pos['pef_pchg'] = 619
-
 
     img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]:pos[x_pos_title]+w]
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
