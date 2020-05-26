@@ -55,8 +55,20 @@ def get_methacholine_aridol_table(image, template):
 
 img = cv2.imread('1.jpg', cv2.IMREAD_COLOR)
 table = get_methacholine_aridol_table(img, template)
+table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
+tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
+table = cv2.blur(table, (2, 2))
 ocr_res = pytesseract.image_to_string(table, config='-psm 6 digits')
-print(ocr_res)
+sp = ocr_res.split('\n')
+arr = []
+for s in sp:
+    if s != '':
+        ns = s.split(' ')
+        tmp_arr = []
+        for n in ns:
+            tmp_arr.append(n)
+        arr.append(tmp_arr)
+print(arr)
 cv2.imshow('table', table)
 cv2.waitKey(0)
 
