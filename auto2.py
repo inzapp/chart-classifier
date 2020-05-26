@@ -20,11 +20,58 @@ def ocr(q, var_name, submat):
     print(res)
     return
 
+
 def ocr_for_title_searching(submat):
     res = pytesseract.image_to_string(submat)
     print('ocr_for_title_searching')
     print(res)
     return res
+
+
+def methacholine(img, x_pos_title, y_pos_title):
+    w = 41
+    h = 20
+    dose_h_offset = 23
+
+    pos = {}
+    pos['ref'] = 150
+    pos['pre'] = 221
+    pos['lv1'] = 287
+    pos['lv2'] = 354
+    pos['lv3'] = 421
+    pos['lv4'] = 488
+    pos['lv5'] = 554
+    pos['lv6'] = 620
+
+    pos['fvc_dose'] = 286
+    pos['fvc_liters'] = 308
+    pos['fvc_pref'] = 329
+    pos['fvc_pchg'] = 349
+
+    pos['fev1_dose'] = 380
+    pos['fev1_liters'] = 403
+    pos['fev1_pref'] = 422
+    pos['fev1_pchg'] = 442
+
+    pos['fef_25_75_dose'] = 470
+    pos['fef_25_75_per'] = 494
+    pos['fef_25_75_pref'] = 519
+    pos['fef_25_75_pchg'] = 539
+
+    pos['pef_dose'] = 564
+    pos['pef_l_sec'] = 585
+    pos['pef_pref'] = 605
+    pos['pef_pchg'] = 626
+
+    if y_pos_title.find('dose') > -1:
+        img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]-dose_h_offset:pos[x_pos_title]+w]
+    else:
+        img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]:pos[x_pos_title]+w]
+
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img = cv2.copyMakeBorder(img, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=[255, 255, 255])
+    return img
+
 
 class MyApp(QWidget):
     
@@ -32,6 +79,7 @@ class MyApp(QWidget):
     ori_path = new_path = ""
     g_var = {}
     pool = ThreadPoolExecutor(8)
+
 
     def __init__(self):
         global ori_path, new_path
@@ -44,20 +92,21 @@ class MyApp(QWidget):
         self.label2.setText(new_path)
         # self.pushButtonForOpenImageFileClicked()
 
+
     def initUI(self):
         self.setGeometry(800, 200, 300, 300)
         self.setWindowTitle("OOMII :)")
         
         self.pushButton1 = QPushButton("Set Original Image Directory")
-        self.pushButton1.clicked.connect(self.pushButtonForOriImagePathClicked)
+        self.pushButton1.clicked.connect(self.set_ori_image_path_callback)
         self.label1 = QLabel()
         
         self.pushButton2 = QPushButton("Set New Image Directory")
-        self.pushButton2.clicked.connect(self.pushButtonForNewImagePathClicked)
+        self.pushButton2.clicked.connect(self.set_new_image_path_callback)
         self.label2 = QLabel()
         
         self.pushButton3 = QPushButton("Classify PFT Sheets")
-        self.pushButton3.clicked.connect(self.pushButtonForOpenImageFileClicked)
+        self.pushButton3.clicked.connect(self.classify_callback)
         self.label3 = QLabel()
 
         layout = QVBoxLayout()
@@ -74,20 +123,21 @@ class MyApp(QWidget):
         self.setLayout(layout)
         
                 
-    def pushButtonForOriImagePathClicked(self):
+    def set_ori_image_path_callback(self):
         global ori_path
         
         ori_path = QFileDialog.getExistingDirectory(self)
         self.label1.setText(ori_path)
         
         
-    def pushButtonForNewImagePathClicked(self):
+    def set_new_image_path_callback(self):
         global new_path
         
         new_path = QFileDialog.getExistingDirectory(self)
         self.label2.setText(new_path)
 
-    def pushButtonForOpenImageFileClicked(self):
+
+    def classify_callback(self):
         global new_path, wb, ws, g_var, pool
  
         ori_image_files = glob.glob(ori_path + "/*.jpg")
@@ -101,50 +151,6 @@ class MyApp(QWidget):
         type07_img_cnt = 0
         type08_img_cnt = 0
         typeUK_img_cnt = 0
-
-        def methacholine(img, x_pos_title, y_pos_title):
-            w = 41
-            h = 20
-            dose_h_offset = 23
-
-            pos = {}
-            pos['ref'] = 150
-            pos['pre'] = 221
-            pos['lv1'] = 287
-            pos['lv2'] = 354
-            pos['lv3'] = 421
-            pos['lv4'] = 488
-            pos['lv5'] = 554
-            pos['lv6'] = 620
-
-            pos['fvc_dose'] = 286
-            pos['fvc_liters'] = 308
-            pos['fvc_pref'] = 329
-            pos['fvc_pchg'] = 349
-
-            pos['fev1_dose'] = 380
-            pos['fev1_liters'] = 403
-            pos['fev1_pref'] = 422
-            pos['fev1_pchg'] = 442
-
-            pos['fef_25_75_dose'] = 470
-            pos['fef_25_75_per'] = 494
-            pos['fef_25_75_pref'] = 519
-            pos['fef_25_75_pchg'] = 539
-
-            pos['pef_dose'] = 564
-            pos['pef_l_sec'] = 585
-            pos['pef_pref'] = 605
-            pos['pef_pchg'] = 626
-
-            if y_pos_title.find('dose') > -1:
-                img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]-dose_h_offset:pos[x_pos_title]+w]
-            else:
-                img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]:pos[x_pos_title]+w]
-
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            img = cv2.copyMakeBorder(img, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=[255, 255, 255])
-            return img
 
         # create new excel file 
         if os.path.isfile(new_path + '/OOMII.xlsx') == 0:
