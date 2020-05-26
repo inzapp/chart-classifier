@@ -40,6 +40,13 @@ def get_max_matched_res(image, template):
     return [max_template_match_img, max_template_match_loc]
 
 
+def pre_process_table(table):
+    table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
+    tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
+    table = cv2.blur(table, (2, 2))
+    return
+
+
 def get_methacholine_aridol_table(image, template):
     res = get_max_matched_res(image, template)
     img = res[0]
@@ -50,14 +57,11 @@ def get_methacholine_aridol_table(image, template):
     table_w = w
     table_h = 360
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
-    return table
+    return pre_process_table(table)
 
 
 img = cv2.imread('1.jpg', cv2.IMREAD_COLOR)
 table = get_methacholine_aridol_table(img, template)
-table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
-tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
-table = cv2.blur(table, (2, 2))
 ocr_res = pytesseract.image_to_string(table, config='-psm 6 digits')
 sp = ocr_res.split('\n')
 arr = []
@@ -71,5 +75,3 @@ for s in sp:
 print(arr)
 cv2.imshow('table', table)
 cv2.waitKey(0)
-
-

@@ -13,8 +13,9 @@ from threading import Thread
 from queue import Queue
 from concurrent.futures import ThreadPoolExecutor
 
-
 pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
+pool = ThreadPoolExecutor(8)
+
 def ocr(q, var_name, submat):
     res = pytesseract.image_to_string(submat, config='-psm 6 digits')
     q.put([var_name, res])
@@ -73,21 +74,20 @@ def methacholine_or_aridol(img, x_pos_title, y_pos_title):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img = cv2.copyMakeBorder(img, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=[255, 255, 255])
 
-    print(x_pos_title)
-    print(y_pos_title)
+    # print(x_pos_title)
+    # print(y_pos_title)
 
-    cv2.imshow('img', img)
-    cv2.waitKey(0)
+    # cv2.imshow('img', img)
+    # cv2.waitKey(0)
 
     return img
 
 
 class MyApp(QWidget):
     
-    global ori_path, new_path, g_var, pool
+    global ori_path, new_path, g_var
     ori_path = new_path = ""
     g_var = {}
-    pool = ThreadPoolExecutor(8)
 
 
     def __init__(self):
