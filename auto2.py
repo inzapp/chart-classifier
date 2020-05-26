@@ -36,14 +36,14 @@ def methacholine(img, x_pos_title, y_pos_title):
     pos = {}
 
     # col pos
-    pos['ref'] = 133
-    pos['pre'] = 203
-    pos['lv1'] = 266
-    pos['lv2'] = 333
-    pos['lv3'] = 400
-    pos['lv4'] = 467
-    pos['lv5'] = 533
-    pos['lv6'] = 601
+    pos['ref'] = 132
+    pos['pre'] = 199
+    pos['lv1'] = 264
+    pos['lv2'] = 331
+    pos['lv3'] = 397
+    pos['lv4'] = 464
+    pos['lv5'] = 530
+    pos['lv6'] = 596
 
     # row pos
     pos['fvc_dose'] = 286
@@ -52,19 +52,20 @@ def methacholine(img, x_pos_title, y_pos_title):
     pos['fvc_pchg'] = 349
 
     pos['fev1_dose'] = 380
-    pos['fev1_liters'] = 403
-    pos['fev1_pref'] = 422
-    pos['fev1_pchg'] = 442
+    pos['fev1_liters'] = 400
+    pos['fev1_pref'] = 417
+    pos['fev1_pchg'] = 438
 
-    pos['fef_25_75_dose'] = 470
-    pos['fef_25_75_per'] = 494
-    pos['fef_25_75_pref'] = 519
-    pos['fef_25_75_pchg'] = 539
+    pos['fef_25_75_dose'] = 468
+    pos['fef_25_75_per'] = 489
+    pos['fef_25_75_pref'] = 513
+    pos['fef_25_75_pchg'] = 533
 
-    pos['pef_dose'] = 564
-    pos['pef_l_sec'] = 585
-    pos['pef_pref'] = 605
-    pos['pef_pchg'] = 626
+    pos['pef_dose'] = 559
+    pos['pef_l_sec'] = 580
+    pos['pef_pref'] = 599
+    pos['pef_pchg'] = 619
+
 
     img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]:pos[x_pos_title]+w]
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
