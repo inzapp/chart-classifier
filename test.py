@@ -43,6 +43,8 @@ def methacholine(img, x_pos_title, y_pos_title):
         img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]:pos[x_pos_title]+w]
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # ret, img = cv2.threshold(img, 100, 255, cv2.THRESH_BINARY)
+    # img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 21, 2)
     img = cv2.copyMakeBorder(img, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=[255, 255, 255])
     return img
 
@@ -79,29 +81,29 @@ y_pos = [
     'pef_pchg',
 ]
 
-img = cv2.imread('1.jpg', cv2.IMREAD_COLOR)
-# for i in range(1, 6 + 1):
-#     sub = methacholine(img, 'lv' + str(i), 'fvc_dose')
-#     cv2.imshow('img', sub)
-#     print(pytesseract.image_to_string(sub))
-#     cv2.waitKey(0)
+img = cv2.imread('methacholine.jpg', cv2.IMREAD_COLOR)
+for i in range(1, 6 + 1):
+    sub = methacholine(img, 'lv' + str(i), 'fvc_dose')
+    cv2.imshow('img', sub)
+    print(pytesseract.image_to_string(sub, config='-psm 6'))
+    cv2.waitKey(0)
 
-# for i in range(1, 6 + 1):
-#     sub = methacholine(img, 'lv' + str(i), 'fvc_liters')
-#     cv2.imshow('img', sub)
-#     print(pytesseract.image_to_string(sub))
-#     cv2.waitKey(0)
+for i in range(1, 6 + 1):
+    sub = methacholine(img, 'lv' + str(i), 'fvc_liters')
+    cv2.imshow('img', sub)
+    print(pytesseract.image_to_string(sub, config='-psm 6'))
+    cv2.waitKey(0)
     
-# for i in range(1, 6 + 1):
-#     sub = methacholine(img, 'lv' + str(i), 'fev1_pref')
-#     cv2.imshow('img', sub)
-#     print(pytesseract.image_to_string(sub))
-#     cv2.waitKey(0)
+for i in range(1, 6 + 1):
+    sub = methacholine(img, 'lv' + str(i), 'fev1_pref')
+    cv2.imshow('img', sub)
+    print(pytesseract.image_to_string(sub, config='-psm 6'))
+    cv2.waitKey(0)
     
 for i in range(1, 6 + 1):
     sub = methacholine(img, 'lv' + str(i), 'fev1_pchg')
     cv2.imshow('img', sub)
-    print(pytesseract.image_to_string(sub))
+    print(pytesseract.image_to_string(sub, config='-psm 6'))
     cv2.waitKey(0)
 
 cv2.destroyAllWindows()

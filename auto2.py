@@ -13,9 +13,10 @@ from threading import Thread
 from queue import Queue
 from concurrent.futures import ThreadPoolExecutor
 
+
 pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
 def ocr(q, var_name, submat):
-    res = pytesseract.image_to_string(submat)
+    res = pytesseract.image_to_string(submat, config='-psm 6')
     q.put([var_name, res])
     print(res)
     return
@@ -34,6 +35,8 @@ def methacholine(img, x_pos_title, y_pos_title):
     dose_h_offset = 23
 
     pos = {}
+
+    # col pos
     pos['ref'] = 150
     pos['pre'] = 221
     pos['lv1'] = 287
@@ -43,6 +46,7 @@ def methacholine(img, x_pos_title, y_pos_title):
     pos['lv5'] = 554
     pos['lv6'] = 620
 
+    # row pos
     pos['fvc_dose'] = 286
     pos['fvc_liters'] = 308
     pos['fvc_pref'] = 329
