@@ -30,21 +30,20 @@ def ocr_for_title_searching(submat):
 
 
 def methacholine(img, x_pos_title, y_pos_title):
-    w = 41
-    h = 20
-    dose_h_offset = 23
+    w = 69
+    h = 17
 
     pos = {}
 
     # col pos
-    pos['ref'] = 150
-    pos['pre'] = 221
-    pos['lv1'] = 287
-    pos['lv2'] = 354
-    pos['lv3'] = 421
-    pos['lv4'] = 488
-    pos['lv5'] = 554
-    pos['lv6'] = 620
+    pos['ref'] = 133
+    pos['pre'] = 203
+    pos['lv1'] = 266
+    pos['lv2'] = 333
+    pos['lv3'] = 400
+    pos['lv4'] = 467
+    pos['lv5'] = 533
+    pos['lv6'] = 601
 
     # row pos
     pos['fvc_dose'] = 286
@@ -67,13 +66,16 @@ def methacholine(img, x_pos_title, y_pos_title):
     pos['pef_pref'] = 605
     pos['pef_pchg'] = 626
 
-    if y_pos_title.find('dose') > -1:
-        img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]-dose_h_offset:pos[x_pos_title]+w]
-    else:
-        img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]:pos[x_pos_title]+w]
-
+    img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]:pos[x_pos_title]+w]
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img = cv2.copyMakeBorder(img, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=[255, 255, 255])
+
+    print(x_pos_title)
+    print(y_pos_title)
+
+    cv2.imshow('img', img)
+    cv2.waitKey(0)
+
     return img
 
 
