@@ -70,11 +70,11 @@ def methacholine(img, x_pos_title, y_pos_title):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img = cv2.copyMakeBorder(img, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=[255, 255, 255])
 
-    print(x_pos_title)
-    print(y_pos_title)
+    # print(x_pos_title)
+    # print(y_pos_title)
 
-    cv2.imshow('img', img)
-    cv2.waitKey(0)
+    # cv2.imshow('img', img)
+    # cv2.waitKey(0)
 
     return img
 
