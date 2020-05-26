@@ -20,6 +20,12 @@ def ocr(q, var_name, submat):
     print(res)
     return
 
+def ocr_for_title_searching(submat):
+    res = pytesseract.image_to_string(submat)
+    print('ocr_for_title_searching')
+    print(res)
+    return res
+
 class MyApp(QWidget):
     
     global ori_path, new_path, g_var, pool
@@ -95,12 +101,6 @@ class MyApp(QWidget):
         type07_img_cnt = 0
         type08_img_cnt = 0
         typeUK_img_cnt = 0
-
-        def ocr_for_title_searching(submat):
-            res = pytesseract.image_to_string(submat)
-            print('ocr_for_title_searching')
-            print(res)
-            return res
 
         def methacholine(img, x_pos_title, y_pos_title):
             w = 41
