@@ -16,7 +16,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
 def ocr(q, var_name, submat):
-    res = pytesseract.image_to_string(submat, config='-psm 6')
+    res = pytesseract.image_to_string(submat, config='-psm 6 digits')
     q.put([var_name, res])
     print(res)
     return
