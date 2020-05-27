@@ -2068,10 +2068,16 @@ def process(before_path):
 
 
 if __name__ == '__main__':
+    file = open('result.txt', mode='wt', encoding='utf-8')
+    file.write('0')
+    file.close()
     if len(sys.argv) > 1:
         args = []
         for i in range(1, len(sys.argv)):
             args.append(sys.argv[i])
         process(args)
+        file = open('result.txt', mode='wt', encoding='utf-8')
+        file.write('1')
+        file.close()
     else:
         print('NEED ARGUMENT FOR IMAGE FILE NAME OR DIR NAME')
