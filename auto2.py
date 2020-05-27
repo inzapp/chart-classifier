@@ -17,7 +17,6 @@ pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
 header_methacholine_aridol = cv2.imread('headers/methacholine_aridol.jpg', cv2.IMREAD_COLOR)
 
 pool = ThreadPoolExecutor(8)
-before_path = 'C:/inz/before'
 g_var = {}
 
 
@@ -142,8 +141,14 @@ def methacholine_or_aridol(img, x_pos_title, y_pos_title):
     img = cv2.copyMakeBorder(img, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=[255, 255, 255])
     return img
 
-def process():
-    before_image_file_paths = glob.glob(before_path + "/*.jpg")
+def process(before_path):
+    before_image_file_paths = []
+    if len(before_path) == 1 and os.path.isdir(before_path[0]) == 1:
+        before_image_file_paths = glob.glob(before_path[0] + "/*.jpg")
+        print(before_image_file_paths)
+    else:
+        before_image_file_paths = before_path
+
     before_image_files_counter = 0
     type01_img_cnt = 0
     type02_img_cnt = 0
@@ -2042,7 +2047,7 @@ def process():
 if __name__ == '__main__':
     print(len(sys.argv))
     print(sys.argv)
-    process()
+    process(['C:/inz/before/1.jpg'])
 
 
 # In[ ]:
