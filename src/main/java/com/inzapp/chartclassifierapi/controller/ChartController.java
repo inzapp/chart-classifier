@@ -19,18 +19,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class ChartController {
 	@GetMapping("ocr")
 	public Map<String, Object> ocr(@RequestParam("path") String path) throws Exception {
-		File progressDir = new File("progress");
-		if (progressDir.exists() && progressDir.isDirectory()) {
-			for (File f : progressDir.listFiles()) {
-				f.delete();
-			}
-		}
-		File resultDir = new File("result");
-		if (resultDir.exists() && resultDir.isDirectory()) {
-			for (File f : resultDir.listFiles()) {
-				f.delete();
-			}
-		}
+//		File progressDir = new File("progress");
+//		if (progressDir.exists() && progressDir.isDirectory()) {
+//			for (File f : progressDir.listFiles()) {
+//				f.delete();
+//			}
+//		}
+//		File resultDir = new File("result");
+//		if (resultDir.exists() && resultDir.isDirectory()) {
+//			for (File f : resultDir.listFiles()) {
+//				f.delete();
+//			}
+//		}
 		Process p = Runtime.getRuntime().exec("python ocr.py " + path);
 		p.waitFor();
 		p.destroy();
