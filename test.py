@@ -3,7 +3,7 @@ import pytesseract
 from concurrent.futures import ThreadPoolExecutor
 pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
 
-methacholine_header = cv2.imread('methacholine_template.jpg', cv2.IMREAD_COLOR)
+header_methacholine_aridol = cv2.imread('headers/methacholine_aridol.jpg', cv2.IMREAD_COLOR)
 pool = ThreadPoolExecutor(8)
 
 def detect(image, template, ratio):
@@ -48,10 +48,10 @@ def pre_process_table(table):
 
 
 def get_methacholine_aridol_table(image):
-    res = get_max_matched_res(image, methacholine_header)
+    res = get_max_matched_res(image, header_methacholine_aridol)
     img = res[0]
     loc = res[1]
-    h, w, ch = methacholine_header.shape
+    h, w, ch = header_methacholine_aridol.shape
     table_x = loc[0]
     table_y = loc[1] + h
     table_w = w
