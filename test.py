@@ -3,8 +3,8 @@ import pytesseract
 from concurrent.futures import ThreadPoolExecutor
 pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
 
-template = cv2.imread('methacholine_template.jpg', cv2.IMREAD_COLOR)
-tpe = ThreadPoolExecutor(8)
+methacholine_header = cv2.imread('methacholine_template.jpg', cv2.IMREAD_COLOR)
+pool = ThreadPoolExecutor(8)
 
 def detect(image, template, ratio):
     resized = cv2.resize(image, dsize=(0, 0), fx=ratio, fy=ratio, interpolation=cv2.INTER_CUBIC)
@@ -24,7 +24,7 @@ def get_max_matched_res(image, template):
     fs = []
     ratio = 0.980
     for i in range(1, 8 + 1):
-        fs.append(tpe.submit(detect, image, template, ratio))
+        fs.append(pool.submit(detect, image, template, ratio))
         ratio += 0.005
 
     max_template_match_val  = -1
@@ -44,14 +44,14 @@ def pre_process_table(table):
     table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
     tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
     table = cv2.blur(table, (2, 2))
-    return
+    return table
 
 
-def get_methacholine_aridol_table(image, template):
-    res = get_max_matched_res(image, template)
+def get_methacholine_aridol_table(image):
+    res = get_max_matched_res(image, methacholine_header)
     img = res[0]
     loc = res[1]
-    h, w, ch = template.shape
+    h, w, ch = methacholine_header.shape
     table_x = loc[0]
     table_y = loc[1] + h
     table_w = w
@@ -60,18 +60,23 @@ def get_methacholine_aridol_table(image, template):
     return pre_process_table(table)
 
 
+def table_to_arr(table_image):
+    ocr_res = pytesseract.image_to_string(table, config='-psm 6 digits')
+    sp = ocr_res.split('\n')
+    arr = []
+    for s in sp:
+        if s != '':
+            ns = s.split(' ')
+            tmp_arr = []
+            for n in ns:
+                tmp_arr.append(n)
+            arr.append(tmp_arr)
+    return arr
+
+
 img = cv2.imread('1.jpg', cv2.IMREAD_COLOR)
-table = get_methacholine_aridol_table(img, template)
-ocr_res = pytesseract.image_to_string(table, config='-psm 6 digits')
-sp = ocr_res.split('\n')
-arr = []
-for s in sp:
-    if s != '':
-        ns = s.split(' ')
-        tmp_arr = []
-        for n in ns:
-            tmp_arr.append(n)
-        arr.append(tmp_arr)
+table = get_methacholine_aridol_table(img)
+arr = table_to_arr(table)
 print(arr)
 cv2.imshow('table', table)
 cv2.waitKey(0)
