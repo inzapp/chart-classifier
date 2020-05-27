@@ -77,12 +77,8 @@ def table_to_arr(table):
     sp = ocr_res.split('\n')
     arr = []
     for s in sp:
-        if s != '':
-            ns = s.split(' ')
-            tmp_arr = []
-            for n in ns:
-                tmp_arr.append(n)
-            arr.append(tmp_arr)
+        if len(s.strip()) != 0:
+            arr.append(s.split(' '))
     return arr
 
 
@@ -1071,6 +1067,7 @@ class MyApp(QWidget):
                 table = get_methacholine_aridol_table(chart_image)
                 arr = table_to_arr(table)
 
+                # fvc dose
                 g_var['img_fvc_dose_lv1'] = arr[0][0]
                 g_var['img_fvc_dose_lv2'] = arr[0][1]
                 g_var['img_fvc_dose_lv3'] = arr[0][2]
@@ -1078,7 +1075,137 @@ class MyApp(QWidget):
                 g_var['img_fvc_dose_lv5'] = arr[0][4]
                 g_var['img_fvc_dose_lv6'] = arr[0][5]
 
+                # fvc liters
+                g_var['img_fvc_ref'] = arr[1][0]
+                g_var['img_fvc_pre'] = arr[1][1]
+                g_var['img_fvc_lv1'] = arr[1][2]
+                g_var['img_fvc_lv2'] = arr[1][3]
+                g_var['img_fvc_lv3'] = arr[1][4]
+                g_var['img_fvc_lv4'] = arr[1][5]
+                g_var['img_fvc_lv5'] = arr[1][6]
+                g_var['img_fvc_lv6'] = arr[1][7]
+
+                # fvc % ref
+                g_var['img_fvc_pref_pre'] = arr[2][0]
+                g_var['img_fvc_pref_lv1'] = arr[2][1]
+                g_var['img_fvc_pref_lv2'] = arr[2][2]
+                g_var['img_fvc_pref_lv3'] = arr[2][3]
+                g_var['img_fvc_pref_lv4'] = arr[2][4]
+                g_var['img_fvc_pref_lv5'] = arr[2][5]
+                g_var['img_fvc_pref_lv6'] = arr[2][6]
+
+                # fvc % chg
+                g_var['img_fvc_pchg_lv1'] = arr[3][0]
+                g_var['img_fvc_pchg_lv2'] = arr[3][1]
+                g_var['img_fvc_pchg_lv3'] = arr[3][2]
+                g_var['img_fvc_pchg_lv4'] = arr[3][3]
+                g_var['img_fvc_pchg_lv5'] = arr[3][4]
+                g_var['img_fvc_pchg_lv6'] = arr[3][5]
+
+                # fev1 dose
+                g_var['img_fev1_dose_lv1'] = arr[4][0]
+                g_var['img_fev1_dose_lv2'] = arr[4][1]
+                g_var['img_fev1_dose_lv3'] = arr[4][2]
+                g_var['img_fev1_dose_lv4'] = arr[4][3]
+                g_var['img_fev1_dose_lv5'] = arr[4][4]
+                g_var['img_fev1_dose_lv6'] = arr[4][5]
+
+                # fev1 liters
+                g_var['img_fev1_ref'] = arr[5][0]
+                g_var['img_fev1_pre'] = arr[5][1]
+                g_var['img_fev1_lv1'] = arr[5][2]
+                g_var['img_fev1_lv2'] = arr[5][3]
+                g_var['img_fev1_lv3'] = arr[5][4]
+                g_var['img_fev1_lv4'] = arr[5][5]
+                g_var['img_fev1_lv5'] = arr[5][6]
+                g_var['img_fev1_lv6'] = arr[5][7]
+
+                # fev1 % ref
+                g_var['img_fev1_pref_pre'] = arr[6][0]
+                g_var['img_fev1_pref_lv1'] = arr[6][1]
+                g_var['img_fev1_pref_lv2'] = arr[6][2]
+                g_var['img_fev1_pref_lv3'] = arr[6][3]
+                g_var['img_fev1_pref_lv4'] = arr[6][4]
+                g_var['img_fev1_pref_lv5'] = arr[6][5]
+                g_var['img_fev1_pref_lv6'] = arr[6][6]
+
+                # fev1 % chg
+                g_var['img_fev1_pchg_lv1'] = arr[7][0]
+                g_var['img_fev1_pchg_lv2'] = arr[7][1]
+                g_var['img_fev1_pchg_lv3'] = arr[7][2]
+                g_var['img_fev1_pchg_lv4'] = arr[7][3]
+                g_var['img_fev1_pchg_lv5'] = arr[7][4]
+                g_var['img_fev1_pchg_lv6'] = arr[7][5]
+
+                # fef25-75% dose
+                g_var['img_fef25_75_lv1'] = arr[8][0]
+                g_var['img_fef25_75_lv2'] = arr[8][1]
+                g_var['img_fef25_75_lv3'] = arr[8][2]
+                g_var['img_fef25_75_lv4'] = arr[8][3]
+                g_var['img_fef25_75_lv5'] = arr[8][4]
+                g_var['img_fef25_75_lv6'] = arr[8][5]
+
+                # fef25-75%
+                g_var['img_fef25_75_dose_lv1'] = arr[9][0]
+                g_var['img_fef25_75_dose_lv2'] = arr[9][1]
+                g_var['img_fef25_75_dose_lv3'] = arr[9][2]
+                g_var['img_fef25_75_dose_lv4'] = arr[9][3]
+                g_var['img_fef25_75_dose_lv5'] = arr[9][4]
+                g_var['img_fef25_75_dose_lv6'] = arr[9][5]
+
+                # fef25-75% % ref
+                # g_var['img_fef25_75_ref'] = arr[10][0]
+                g_var['img_fef25_75_pre'] = arr[10][0]
+                g_var['img_fef25_75_lv1'] = arr[10][1]
+                g_var['img_fef25_75_lv2'] = arr[10][2]
+                g_var['img_fef25_75_lv3'] = arr[10][3]
+                g_var['img_fef25_75_lv4'] = arr[10][4]
+                g_var['img_fef25_75_lv5'] = arr[10][5]
+                g_var['img_fef25_75_lv6'] = arr[10][6]
+
+                # fef25-75% % chg
+                g_var['img_fef25_75_pchg_lv1'] = arr[11][0]
+                g_var['img_fef25_75_pchg_lv2'] = arr[11][1]
+                g_var['img_fef25_75_pchg_lv3'] = arr[11][2]
+                g_var['img_fef25_75_pchg_lv4'] = arr[11][3]
+                g_var['img_fef25_75_pchg_lv5'] = arr[11][4]
+                g_var['img_fef25_75_pchg_lv6'] = arr[11][5]
                 
+                # pef lsec dose
+                g_var['img_pef_dose_lv1'] = arr[12][0]
+                g_var['img_pef_dose_lv2'] = arr[12][1]
+                g_var['img_pef_dose_lv3'] = arr[12][2]
+                g_var['img_pef_dose_lv4'] = arr[12][3]
+                g_var['img_pef_dose_lv5'] = arr[12][4]
+                g_var['img_pef_dose_lv6'] = arr[12][5]
+
+                # pef lsec
+                g_var['img_pef_ref'] = arr[13][0]
+                g_var['img_pef_pre'] = arr[13][1]
+                g_var['img_pef_lv1'] = arr[13][2]
+                g_var['img_pef_lv2'] = arr[13][3]
+                g_var['img_pef_lv3'] = arr[13][4]
+                g_var['img_pef_lv4'] = arr[13][5]
+                g_var['img_pef_lv5'] = arr[13][6]
+                g_var['img_pef_lv6'] = arr[13][7]
+
+                # pef lsec % ref
+                g_var['img_pef_pref_pre'] = arr[14][0]
+                g_var['img_pef_pref_lv1'] = arr[14][1]
+                g_var['img_pef_pref_lv2'] = arr[14][2]
+                g_var['img_pef_pref_lv3'] = arr[14][3]
+                g_var['img_pef_pref_lv4'] = arr[14][4]
+                g_var['img_pef_pref_lv5'] = arr[14][5]
+                g_var['img_pef_pref_lv6'] = arr[14][6]
+
+                # pef lsec % chg
+                g_var['img_pef_pchg_lv1'] = arr[15][0]
+                g_var['img_pef_pchg_lv2'] = arr[15][1]
+                g_var['img_pef_pchg_lv3'] = arr[15][2]
+                g_var['img_pef_pchg_lv4'] = arr[15][3]
+                g_var['img_pef_pchg_lv5'] = arr[15][4]
+                g_var['img_pef_pchg_lv6'] = arr[15][5]
+
 
                 fs.append(pool.submit(ocr, q, 'img_pid', chart_image[9:33, 705:811]))
                 fs.append(pool.submit(ocr, q, 'img_date', chart_image[136:159, 721:805]))
@@ -1089,36 +1216,6 @@ class MyApp(QWidget):
 
                 fs.append(pool.submit(ocr, q, 'img_pc_fev1', chart_image[739:776, 746:790]))
                 fs.append(pool.submit(ocr, q, 'img_fev1_pc', chart_image[739:776, 856:924]))
-
-                # fs.append(pool.submit(ocr, q, 'img_fvc_ref', methacholine_or_aridol(chart_image, 'ref', 'fvc_liters')))
-                # fs.append(pool.submit(ocr, q, 'img_fvc_pre', methacholine_or_aridol(chart_image, 'pre', 'fvc_liters')))
-                # fs.append(pool.submit(ocr, q, 'img_fcv_prev_pre', methacholine_or_aridol(chart_image, 'pre', 'fvc_pref')))
-                # fs.append(pool.submit(ocr, q, 'img_fev1_ref', methacholine_or_aridol(chart_image, 'ref', 'fev1_dose')))
-                # fs.append(pool.submit(ocr, q, 'img_fev1_pre', methacholine_or_aridol(chart_image, 'pre', 'fev1_dose')))
-                # fs.append(pool.submit(ocr, q, 'img_fev1_pref_pre', methacholine_or_aridol(chart_image, 'pre', 'fev1_pref')))
-                # fs.append(pool.submit(ocr, q, 'img_fef25_75_ref', methacholine_or_aridol(chart_image, 'ref', 'fef_25_75_per')))
-                # fs.append(pool.submit(ocr, q, 'img_fef25_75_pre', methacholine_or_aridol(chart_image, 'pre', 'fef_25_75_per')))
-                # fs.append(pool.submit(ocr, q, 'img_fef25_75_pref_pre', methacholine_or_aridol(chart_image, 'pre', 'fef_25_75_pref')))
-                # fs.append(pool.submit(ocr, q, 'img_pef_ref', methacholine_or_aridol(chart_image, 'ref', 'pef_l_sec')))
-                # fs.append(pool.submit(ocr, q, 'img_pef_pre', methacholine_or_aridol(chart_image, 'pre', 'pef_l_sec')))
-                # fs.append(pool.submit(ocr, q, 'img_pef_pref_pre', methacholine_or_aridol(chart_image, 'pre', 'pef_pref')))
-                # for i in range(1, 6 + 1):
-                #     fs.append(pool.submit(ocr, q, 'img_fvc_dose_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fvc_dose')))
-                #     fs.append(pool.submit(ocr, q, 'img_fvc_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fvc_liters')))
-                #     fs.append(pool.submit(ocr, q, 'img_fvc_pref_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fvc_pref')))
-                #     fs.append(pool.submit(ocr, q, 'img_fvc_pchg_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fvc_pchg')))
-                #     fs.append(pool.submit(ocr, q, 'img_fev1_dose_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fev1_dose')))
-                #     fs.append(pool.submit(ocr, q, 'img_fev1_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fev1_liters')))
-                #     fs.append(pool.submit(ocr, q, 'img_fev1_pref_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fev1_pref')))
-                #     fs.append(pool.submit(ocr, q, 'img_fev1_pchg_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fev1_pchg')))
-                #     fs.append(pool.submit(ocr, q, 'img_fef25_75_dose_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fef_25_75_dose')))
-                #     fs.append(pool.submit(ocr, q, 'img_fef25_75_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fef_25_75_per')))
-                #     fs.append(pool.submit(ocr, q, 'img_fef25_75_pref_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fef_25_75_pref')))
-                #     fs.append(pool.submit(ocr, q, 'img_fef25_75_pchg_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fef_25_75_pchg')))
-                #     fs.append(pool.submit(ocr, q, 'img_pef_dose_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'pef_dose')))
-                #     fs.append(pool.submit(ocr, q, 'img_pef_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'pef_l_sec')))
-                #     fs.append(pool.submit(ocr, q, 'img_pef_pref_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'pef_pref')))
-                #     fs.append(pool.submit(ocr, q, 'img_pef_pchg_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'pef_pchg')))
                 type01_img_cnt += 1
                 pass
  
