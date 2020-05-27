@@ -79,13 +79,29 @@ def get_methacholine_aridol_table(image, file_name):
     return pre_process_table(table, file_name)
 
 
-def table_to_arr(table):
+def table_to_arr(table, file_name):
     ocr_res = pytesseract.image_to_string(table, config='-psm 6 digits')
     sp = ocr_res.split('\n')
     arr = []
     for s in sp:
         if len(s.strip()) != 0:
-            arr.append(s.split(' '))
+            sp = s.split(' ')
+            line_arr = []
+            for ns in sp:
+                if ns.startswith('.'):
+                    ns = ns.replace('.', '-', 1)
+                line_arr.append(ns)
+            arr.append(line_arr)
+            
+    if os.path.exists ('result') == 0:
+        os.mkdir('result')
+    sp = file_name.split('.')
+    file = open('result/' + sp[0] + '.txt', mode='wt', encoding='utf-8')
+    for line in arr:
+        for ns in line:
+            file.write(ns + ' ')
+        file.write('\n')
+    file.close()
     return arr
 
 
@@ -1005,7 +1021,7 @@ def process(before_path):
         if ocr_for_title_searching(chart_image[167:223, 239:445]) == 'Methacholine':
             g_var['img_type'] = 'type01'
             table = get_methacholine_aridol_table(chart_image, cur_before_image_file_name)
-            arr = table_to_arr(table)
+            arr = table_to_arr(table, cur_before_image_file_name)
 
             # fvc dose
             for i in range(0, 5 + 1):
