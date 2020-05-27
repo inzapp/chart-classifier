@@ -18,7 +18,6 @@ header_methacholine_aridol = cv2.imread('headers/methacholine_aridol.jpg', cv2.I
 
 pool = ThreadPoolExecutor(8)
 before_path = 'C:/inz/before'
-after_path = 'C:/inz/after'
 g_var = {}
 
 
@@ -157,7 +156,6 @@ def process():
     typeUK_img_cnt = 0
 
     # create new excel file 
-    # if os.path.isfile(after_path + '/OOMII.xlsx') == 0:
     if os.path.isfile('OOMII.xlsx') == 0:
         wb = openpyxl.Workbook()
         ws = wb.active
@@ -1609,10 +1607,8 @@ def process():
             g_var[q_val[0]] = q_val[1]
         
         # create new directory
-        after_path = g_var['img_type']
-        
-        if os.path.exists (after_path) == 0:
-            os.mkdir(after_path)
+        if os.path.exists (g_var['img_type']) == 0:
+            os.mkdir(g_var['img_type'])
 
         # add data into OOMII_DB
         ws_cnt = str(ws.max_row + 1)
@@ -2028,7 +2024,7 @@ def process():
         wb.save("OOMII.xlsx")
         
         # create new image
-        cv2.imwrite(after_path + "/" + g_var['img_type'] + "_" + cur_before_image_file_name, chart_image)
+        cv2.imwrite(g_var['img_type'] + "/" + g_var['img_type'] + "_" + cur_before_image_file_name, chart_image)
 
     print()
     print('Total: ' + str(before_image_files_counter))
