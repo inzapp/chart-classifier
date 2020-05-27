@@ -2045,9 +2045,10 @@ def process(before_path):
 
 
 if __name__ == '__main__':
-    print(len(sys.argv))
-    print(sys.argv)
-    process(['C:/inz/before/1.jpg'])
-
-
-# In[ ]:
+    if len(sys.argv) > 1:
+        args = []
+        for i in range(1, len(sys.argv)):
+            args.append(sys.argv[i])
+        process(args)
+    else:
+        print('NEED ARGUMENT FOR IMAGE FILE NAME OR DIR NAME')
