@@ -28,11 +28,6 @@ def detect(image, template, ratio):
 
 
 def get_max_matched_res(image, template):
-    ratio = 0.980
-    max_val = -1
-    max_loc = -1
-    max_chart = -1
-
     fs = []
     ratio = 0.980
     for i in range(1, 8 + 1):
@@ -63,6 +58,9 @@ def pre_process_table(table, file_name):
     cv2.imwrite(sp[0] + '_threshold.' + sp[1], table)
     table = cv2.blur(table, (2, 2))
     cv2.imwrite(sp[0] + '_blur.' + sp[1], table)
+
+    cv2.imshow('max_template', table)
+    cv2.waitKey(0)
     return table
 
 
@@ -1102,59 +1100,110 @@ def process(before_path):
                 for ns in ar:
                     print(ns)
                 
-            fs.append(pool.submit(ocr, q, 'img_pid', chart_image[9:33, 705:811]))
-            fs.append(pool.submit(ocr, q, 'img_date', chart_image[136:159, 721:805]))
-            fs.append(pool.submit(ocr, q, 'img_age', chart_image[52:84, 709:745]))
-            fs.append(pool.submit(ocr, q, 'img_height', chart_image[54:85, 864:906]))
-            fs.append(pool.submit(ocr, q, 'img_weight', chart_image[80:110, 771:816]))
-            fs.append(pool.submit(ocr, q, 'img_gender', chart_image[77:112, 893:965]))
+            # fs.append(pool.submit(ocr, q, 'img_pid', chart_image[9:33, 705:811]))
+            # fs.append(pool.submit(ocr, q, 'img_date', chart_image[136:159, 721:805]))
+            # fs.append(pool.submit(ocr, q, 'img_age', chart_image[52:84, 709:745]))
+            # fs.append(pool.submit(ocr, q, 'img_height', chart_image[54:85, 864:906]))
+            # fs.append(pool.submit(ocr, q, 'img_weight', chart_image[80:110, 771:816]))
+            # fs.append(pool.submit(ocr, q, 'img_gender', chart_image[77:112, 893:965]))
 
-            fs.append(pool.submit(ocr, q, 'img_pc_fev1', chart_image[739:776, 746:790]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_pc', chart_image[739:776, 856:924]))
+            # fs.append(pool.submit(ocr, q, 'img_pc_fev1', chart_image[739:776, 746:790]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_pc', chart_image[739:776, 856:924]))
             type01_img_cnt += 1
             pass
 
         elif ocr_for_title_searching(chart_image[177:217, 156:247]) == 'aridol':
             g_var['img_type'] = 'type02'
-            fs.append(pool.submit(ocr, q, 'img_pid', chart_image[3:35, 710:817]))
-            fs.append(pool.submit(ocr, q, 'img_date', chart_image[134:160, 726:806]))
-            fs.append(pool.submit(ocr, q, 'img_age', chart_image[56:85, 712:755]))
-            fs.append(pool.submit(ocr, q, 'img_height', chart_image[55:87, 871:914]))
-            fs.append(pool.submit(ocr, q, 'img_weight', chart_image[82:111, 773:816]))
-            fs.append(pool.submit(ocr, q, 'img_gender', chart_image[80:111, 888:959]))
+            table = get_methacholine_aridol_table(chart_image, cur_before_image_file_name)
+            arr = table_to_arr(table, cur_before_image_file_name)
 
-            fs.append(pool.submit(ocr, q, 'img_pc_fev1', chart_image[748:781, 755:803]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_pc', chart_image[750:783, 867:928]))
+            # fvc dose
+            for i in range(0, 8 + 1):
+                g_var['img_fvc_dose_lv' + str(i + 1)] = arr[0][i]
 
-            fs.append(pool.submit(ocr, q, 'img_fvc_ref', methacholine_or_aridol(chart_image, 'ref', 'fvc_liters')))
-            fs.append(pool.submit(ocr, q, 'img_fvc_pre', methacholine_or_aridol(chart_image, 'pre', 'fvc_liters')))
-            fs.append(pool.submit(ocr, q, 'img_fcv_prev_pre', methacholine_or_aridol(chart_image, 'pre', 'fvc_pref')))
-            fs.append(pool.submit(ocr, q, 'img_fev1_ref', methacholine_or_aridol(chart_image, 'ref', 'fev1_dose')))
-            fs.append(pool.submit(ocr, q, 'img_fev1_pre', methacholine_or_aridol(chart_image, 'pre', 'fev1_dose')))
-            fs.append(pool.submit(ocr, q, 'img_fev1_pref_pre', methacholine_or_aridol(chart_image, 'pre', 'fev1_pref')))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_ref', methacholine_or_aridol(chart_image, 'ref', 'fef_25_75_per')))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_pre', methacholine_or_aridol(chart_image, 'pre', 'fef_25_75_per')))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_pref_pre', methacholine_or_aridol(chart_image, 'pre', 'fef_25_75_pref')))
-            fs.append(pool.submit(ocr, q, 'img_pef_ref', methacholine_or_aridol(chart_image, 'ref', 'pef_l_sec')))
-            fs.append(pool.submit(ocr, q, 'img_pef_pre', methacholine_or_aridol(chart_image, 'pre', 'pef_l_sec')))
-            fs.append(pool.submit(ocr, q, 'img_pef_pref_pre', methacholine_or_aridol(chart_image, 'pre', 'pef_pref')))
+            # fvc liters
+            g_var['img_fvc_ref'] = arr[1][0]
+            g_var['img_fvc_pre'] = arr[1][1]
+            for i in range(2, 10 + 1):
+                g_var['img_fvc_lv' + str(i - 1)] = arr[1][i]
+
+            # fvc % ref
+            g_var['img_fvc_pref_pre'] = arr[2][0]
             for i in range(1, 9 + 1):
-                fs.append(pool.submit(ocr, q, 'img_fvc_dose_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fvc_dose')))
-                fs.append(pool.submit(ocr, q, 'img_fvc_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fvc_liters')))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pref_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fvc_pref')))
-                fs.append(pool.submit(ocr, q, 'img_fvc_pchg_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fvc_pchg')))
-                fs.append(pool.submit(ocr, q, 'img_fev1_dose_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fev1_dose')))
-                fs.append(pool.submit(ocr, q, 'img_fev1_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fev1_liters')))
-                fs.append(pool.submit(ocr, q, 'img_fev1_pref_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fev1_pref')))
-                fs.append(pool.submit(ocr, q, 'img_fev1_pchg_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fev1_pchg')))
-                fs.append(pool.submit(ocr, q, 'img_fef25_75_dose_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fef_25_75_dose')))
-                fs.append(pool.submit(ocr, q, 'img_fef25_75_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fef_25_75_per')))
-                fs.append(pool.submit(ocr, q, 'img_fef25_75_pref_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fef_25_75_pref')))
-                fs.append(pool.submit(ocr, q, 'img_fef25_75_pchg_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'fef_25_75_pchg')))
-                fs.append(pool.submit(ocr, q, 'img_pef_dose_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'pef_dose')))
-                fs.append(pool.submit(ocr, q, 'img_pef_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'pef_l_sec')))
-                fs.append(pool.submit(ocr, q, 'img_pef_pref_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'pef_pref')))
-                fs.append(pool.submit(ocr, q, 'img_pef_pchg_lv' + str(i), methacholine_or_aridol(chart_image, 'lv' + str(i), 'pef_pchg')))
+                g_var['img_fvc_pref_lv' + str(i)] = arr[2][i]
+
+            # fvc % chg
+            for i in range(0, 8 + 1):
+                g_var['img_fvc_pchg_lv' + str(i + 1)] = arr[3][i]
+
+            # fev1 dose
+            for i in range(0, 8 + 1):
+                g_var['img_fev1_dose_lv' + str(i + 1)] = arr[4][i]
+
+            # fev1 liters
+            g_var['img_fev1_ref'] = arr[5][0]
+            g_var['img_fev1_pre'] = arr[5][1]
+            for i in range(2, 10 + 1):
+                g_var['img_fev1_lv' + str(i - 1)] = arr[5][i]
+
+            # fev1 % ref
+            g_var['img_fev1_pref_pre'] = arr[6][0]
+            for i in range(1, 9 + 1):
+                g_var['img_fev1_pref_lv' + str(i)] = arr[6][i]
+
+            # fev1 % chg
+            for i in range(0, 8 + 1):
+                g_var['img_fev1_pchg_lv' + str(i + 1)] = arr[7][i]
+
+            # fef25-75% dose
+            for i in range(0, 8 + 1):
+                g_var['img_fef25_75_lv' + str(i + 1)] = arr[8][i]
+
+            # fef25-75%
+            for i in range(0, 10 + 1):
+                g_var['img_fef25_75_dose_lv' + str(i + 1)] = arr[9][i]
+
+            # fef25-75% % ref
+            # g_var['img_fef25_75_ref'] = arr[10][0]
+            g_var['img_fef25_75_pre'] = arr[10][0]
+            for i in range(1, 9 + 1):
+                g_var['img_fef25_75_lv' + str(i)] = arr[10][i]
+
+            # fef25-75% % chg
+            for i in range(0, 8 + 1):
+                g_var['img_fef25_75_pchg_lv' + str(i + 1)] = arr[11][i]
+            
+            # pef lsec dose
+            for i in range(0, 8 + 1):
+                g_var['img_pef_dose_lv' + str(i + 1)] = arr[12][i]
+
+            # pef lsec
+            g_var['img_pef_ref'] = arr[13][0]
+            g_var['img_pef_pre'] = arr[13][1]
+            for i in range(2, 10 + 1):
+                g_var['img_pef_lv' + str(i - 1)] = arr[13][i]
+
+            # pef lsec % ref
+            g_var['img_pef_pref_pre'] = arr[14][0]
+            for i in range(1, 9 + 1):
+                g_var['img_pef_pref_lv' +  str(i)] = arr[14][i]
+
+            # pef lsec % chg
+            for i in range(0, 8 + 1):
+                g_var['img_pef_pchg_lv' + str(i + 1)] = arr[15][i]
+
+            for ar in arr:
+                for ns in ar:
+                    print(ns)
+            # fs.append(pool.submit(ocr, q, 'img_pid', chart_image[3:35, 710:817]))
+            # fs.append(pool.submit(ocr, q, 'img_date', chart_image[134:160, 726:806]))
+            # fs.append(pool.submit(ocr, q, 'img_age', chart_image[56:85, 712:755]))
+            # fs.append(pool.submit(ocr, q, 'img_height', chart_image[55:87, 871:914]))
+            # fs.append(pool.submit(ocr, q, 'img_weight', chart_image[82:111, 773:816]))
+            # fs.append(pool.submit(ocr, q, 'img_gender', chart_image[80:111, 888:959]))
+
+            # fs.append(pool.submit(ocr, q, 'img_pc_fev1', chart_image[748:781, 755:803]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_pc', chart_image[750:783, 867:928]))
 
             type02_img_cnt += 1
             pass
