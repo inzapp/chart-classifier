@@ -59,8 +59,8 @@ def pre_process_table(table, file_name):
     table = cv2.blur(table, (2, 2))
     cv2.imwrite(sp[0] + '_blur.' + sp[1], table)
 
-    cv2.imshow('max_template', table)
-    cv2.waitKey(0)
+    # cv2.imshow('max_template', table)
+    # cv2.waitKey(0)
     return table
 
 
