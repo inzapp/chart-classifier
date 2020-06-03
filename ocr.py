@@ -59,16 +59,16 @@ def get_methacholine_aridol_table(image, file_name):
     table_h = 360
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
     
-    if os.path.exists ('progress') == 0:
-        os.mkdir('progress')
-    sp = file_name.split('.')
-    sp[0] = 'progress/' + sp[0]
-    table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
-    cv2.imwrite(sp[0] + '_grayscale.' + sp[1], table)
-    tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
-    cv2.imwrite(sp[0] + '_threshold.' + sp[1], table)
-    table = cv2.blur(table, (2, 2))
-    cv2.imwrite(sp[0] + '_blur.' + sp[1], table)
+    # if os.path.exists ('progress') == 0:
+    #     os.mkdir('progress')
+    # sp = file_name.split('.')
+    # sp[0] = 'progress/' + sp[0]
+    # table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
+    # cv2.imwrite(sp[0] + '_grayscale.' + sp[1], table)
+    # tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
+    # cv2.imwrite(sp[0] + '_threshold.' + sp[1], table)
+    # table = cv2.blur(table, (2, 2))
+    # cv2.imwrite(sp[0] + '_blur.' + sp[1], table)
     return table
 
 
@@ -1043,6 +1043,8 @@ def process(before_path):
         if ocr_for_title_searching(chart_image[167:223, 239:445]) == 'Methacholine':
             g_var['img_type'] = 'type01'
             table = get_methacholine_aridol_table(chart_image, cur_before_image_file_name)
+
+            table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
             arr = table_to_arr(table, cur_before_image_file_name)
 
             # fvc dose
@@ -1219,6 +1221,9 @@ def process(before_path):
             for ar in arr:
                 for ns in ar:
                     print(ns)
+                    
+            cv2.imshow('table', table)
+            cv2.waitKey(0)
             # fs.append(pool.submit(ocr, q, 'img_pid', chart_image[3:35, 710:817]))
             # fs.append(pool.submit(ocr, q, 'img_date', chart_image[134:160, 726:806]))
             # fs.append(pool.submit(ocr, q, 'img_age', chart_image[56:85, 712:755]))
