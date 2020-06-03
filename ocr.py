@@ -14,12 +14,14 @@ from queue import Queue
 from concurrent.futures import ThreadPoolExecutor
 
 pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
+
+print('header loading: methacholine_aridol...')
 header_methacholine_aridol = cv2.imread('headers/methacholine_aridol.jpg', cv2.IMREAD_COLOR)
+print('header loading: diffusing...')
 header_diffusing = cv2.imread('headers/difussing.jpg', cv2.IMREAD_COLOR)
 
 pool = ThreadPoolExecutor(8)
 g_var = {}
-
 
 def detect(image, template, ratio):
     resized = cv2.resize(image, dsize=(0, 0), fx=ratio, fy=ratio, interpolation=cv2.INTER_CUBIC)
@@ -83,16 +85,16 @@ def get_diffusing_table(image, file_name):
     table_h = 360
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
     
-    if os.path.exists ('progress') == 0:
-        os.mkdir('progress')
-    sp = file_name.split('.')
-    sp[0] = 'progress/' + sp[0]
-    table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
-    cv2.imwrite(sp[0] + '_grayscale.' + sp[1], table)
-    tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
-    cv2.imwrite(sp[0] + '_threshold.' + sp[1], table)
-    table = cv2.blur(table, (2, 2))
-    cv2.imwrite(sp[0] + '_blur.' + sp[1], table)
+    # if os.path.exists ('progress') == 0:
+    #     os.mkdir('progress')
+    # sp = file_name.split('.')
+    # sp[0] = 'progress/' + sp[0]
+    # table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
+    # cv2.imwrite(sp[0] + '_grayscale.' + sp[1], table)
+    # tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
+    # cv2.imwrite(sp[0] + '_threshold.' + sp[1], table)
+    # table = cv2.blur(table, (2, 2))
+    # cv2.imwrite(sp[0] + '_blur.' + sp[1], table)
 
     cv2.imshow('table', table)
     cv2.waitKey(0)
@@ -140,51 +142,6 @@ def ocr_for_title_searching(submat):
     print(res)
     return res
 
-
-def methacholine_or_aridol(img, x_pos_title, y_pos_title):
-    w = 69
-    h = 17
-
-    pos = {}
-
-    # col pos
-    pos['ref'] = 132
-    pos['pre'] = 199
-    pos['lv1'] = 265
-    pos['lv2'] = 331
-    pos['lv3'] = 397
-    pos['lv4'] = 464
-    pos['lv5'] = 530
-    pos['lv6'] = 596
-    pos['lv7'] = 662
-    pos['lv8'] = 728
-    pos['lv9'] = 794
-
-    # row pos
-    pos['fvc_dose'] = 286
-    pos['fvc_liters'] = 308
-    pos['fvc_pref'] = 329
-    pos['fvc_pchg'] = 349
-
-    pos['fev1_dose'] = 380
-    pos['fev1_liters'] = 400
-    pos['fev1_pref'] = 417
-    pos['fev1_pchg'] = 438
-
-    pos['fef_25_75_dose'] = 468
-    pos['fef_25_75_per'] = 489
-    pos['fef_25_75_pref'] = 513
-    pos['fef_25_75_pchg'] = 533
-
-    pos['pef_dose'] = 559
-    pos['pef_l_sec'] = 580
-    pos['pef_pref'] = 599
-    pos['pef_pchg'] = 619
-
-    img = img[pos[y_pos_title]:pos[y_pos_title]+h, pos[x_pos_title]:pos[x_pos_title]+w]
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    img = cv2.copyMakeBorder(img, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=[255, 255, 255])
-    return img
 
 def process(before_path):
     before_image_file_paths = []
@@ -1222,8 +1179,6 @@ def process(before_path):
                 for ns in ar:
                     print(ns)
                     
-            cv2.imshow('table', table)
-            cv2.waitKey(0)
             # fs.append(pool.submit(ocr, q, 'img_pid', chart_image[3:35, 710:817]))
             # fs.append(pool.submit(ocr, q, 'img_date', chart_image[134:160, 726:806]))
             # fs.append(pool.submit(ocr, q, 'img_age', chart_image[56:85, 712:755]))
