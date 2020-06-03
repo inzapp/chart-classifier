@@ -14,14 +14,14 @@ from queue import Queue
 from concurrent.futures import ThreadPoolExecutor
 
 pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
+pool = ThreadPoolExecutor(8)
+g_var = {}
 
 print('header loading: methacholine_aridol...')
 header_methacholine_aridol = cv2.imread('headers/methacholine_aridol.jpg', cv2.IMREAD_COLOR)
 print('header loading: diffusing...')
 header_diffusing = cv2.imread('headers/difussing.jpg', cv2.IMREAD_COLOR)
 
-pool = ThreadPoolExecutor(8)
-g_var = {}
 
 def detect(image, template, ratio):
     resized = cv2.resize(image, dsize=(0, 0), fx=ratio, fy=ratio, interpolation=cv2.INTER_CUBIC)
@@ -60,6 +60,7 @@ def get_methacholine_aridol_table(image, file_name):
     table_w = w
     table_h = 360
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
+    table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     
     # if os.path.exists ('progress') == 0:
     #     os.mkdir('progress')
@@ -81,9 +82,10 @@ def get_diffusing_table(image, file_name):
     h, w, ch = header_diffusing.shape
     table_x = loc[0]
     table_y = loc[1] + h
-    table_w = w
-    table_h = 360
+    table_w = 220
+    table_h = 140
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
+    table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     
     # if os.path.exists ('progress') == 0:
     #     os.mkdir('progress')
@@ -1000,8 +1002,6 @@ def process(before_path):
         if ocr_for_title_searching(chart_image[167:223, 239:445]) == 'Methacholine':
             g_var['img_type'] = 'type01'
             table = get_methacholine_aridol_table(chart_image, cur_before_image_file_name)
-
-            table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
             arr = table_to_arr(table, cur_before_image_file_name)
 
             # fvc dose
