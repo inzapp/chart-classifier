@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
 header_methacholine_aridol = cv2.imread('headers/methacholine_aridol.jpg', cv2.IMREAD_COLOR)
+header_diffusing = cv2.imread('headers/difussing.jpg', cv2.IMREAD_COLOR)
 
 pool = ThreadPoolExecutor(8)
 g_var = {}
@@ -47,7 +48,41 @@ def get_max_matched_res(image, template):
     return [max_template_match_img, max_template_match_loc]
 
 
-def pre_process_table(table, file_name):
+def get_methacholine_aridol_table(image, file_name):
+    res = get_max_matched_res(image, header_methacholine_aridol)
+    img = res[0]
+    loc = res[1]
+    h, w, ch = header_methacholine_aridol.shape
+    table_x = loc[0]
+    table_y = loc[1] + h
+    table_w = w
+    table_h = 360
+    table = img[table_y:table_y+table_h, table_x:table_x+table_w]
+    
+    if os.path.exists ('progress') == 0:
+        os.mkdir('progress')
+    sp = file_name.split('.')
+    sp[0] = 'progress/' + sp[0]
+    table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
+    cv2.imwrite(sp[0] + '_grayscale.' + sp[1], table)
+    tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
+    cv2.imwrite(sp[0] + '_threshold.' + sp[1], table)
+    table = cv2.blur(table, (2, 2))
+    cv2.imwrite(sp[0] + '_blur.' + sp[1], table)
+    return table
+
+
+def get_diffusing_table(image, file_name):
+    res = get_max_matched_res(image, header_diffusing)
+    img = res[0]
+    loc = res[1]
+    h, w, ch = header_diffusing.shape
+    table_x = loc[0]
+    table_y = loc[1] + h
+    table_w = w
+    table_h = 360
+    table = img[table_y:table_y+table_h, table_x:table_x+table_w]
+    
     if os.path.exists ('progress') == 0:
         os.mkdir('progress')
     sp = file_name.split('.')
@@ -59,22 +94,9 @@ def pre_process_table(table, file_name):
     table = cv2.blur(table, (2, 2))
     cv2.imwrite(sp[0] + '_blur.' + sp[1], table)
 
-    # cv2.imshow('max_template', table)
-    # cv2.waitKey(0)
+    cv2.imshow('table', table)
+    cv2.waitKey(0)
     return table
-
-
-def get_methacholine_aridol_table(image, file_name):
-    res = get_max_matched_res(image, header_methacholine_aridol)
-    img = res[0]
-    loc = res[1]
-    h, w, ch = header_methacholine_aridol.shape
-    table_x = loc[0]
-    table_y = loc[1] + h
-    table_w = w
-    table_h = 360
-    table = img[table_y:table_y+table_h, table_x:table_x+table_w]
-    return pre_process_table(table, file_name)
 
 
 def table_to_arr(table, file_name):
@@ -111,7 +133,9 @@ def ocr(q, var_name, submat):
 
 
 def ocr_for_title_searching(submat):
-    res = pytesseract.image_to_string(submat)
+    submat = cv2.resize(submat, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    submat = cv2.copyMakeBorder(submat, 20, 20, 20, 20, cv2.BORDER_CONSTANT, value=[255, 255, 255])
+    res = pytesseract.image_to_string(submat, config='-psm 6')
     print('ocr_for_title_searching')
     print(res)
     return res
@@ -1210,27 +1234,31 @@ def process(before_path):
     
         elif ocr_for_title_searching(chart_image[360:390, 38:111]) == 'Diffusing':
             g_var['img_type'] = 'type03'
-            fs.append(pool.submit(ocr, q, 'img_pid', chart_image[54:83, 684:776]))
-            fs.append(pool.submit(ocr, q, 'img_date', chart_image[4:35, 712:801]))
-            fs.append(pool.submit(ocr, q, 'img_age', chart_image[77:111, 695:737]))
-            fs.append(pool.submit(ocr, q, 'img_height', chart_image[77:110, 860:902]))
-            fs.append(pool.submit(ocr, q, 'img_weight', chart_image[105:136, 765:808]))
-            fs.append(pool.submit(ocr, q, 'img_gender', chart_image[105:135, 881:966]))
-            fs.append(pool.submit(ocr, q, 'img_dlco_ref', chart_image[386:405, 326:370]))
-            fs.append(pool.submit(ocr, q, 'img_dlco_pre', chart_image[386:405, 387:436]))
-            fs.append(pool.submit(ocr, q, 'img_dlco_pref_pre', chart_image[386:405, 464:497]))
-            fs.append(pool.submit(ocr, q, 'img_dladj_ref', chart_image[403:422, 326:370]))
-            fs.append(pool.submit(ocr, q, 'img_dladj_pre', chart_image[403:422, 387:436]))
-            fs.append(pool.submit(ocr, q, 'img_dladj_pref_pre', chart_image[403:422, 464:497]))
-            fs.append(pool.submit(ocr, q, 'img_dlcodva_ref', chart_image[420:440, 326:370]))
-            fs.append(pool.submit(ocr, q, 'img_dlcodva_pre', chart_image[420:440, 387:436]))
-            fs.append(pool.submit(ocr, q, 'img_dlcodva_pref_pre', chart_image[420:440, 464:497]))
-            fs.append(pool.submit(ocr, q, 'img_dldvaadj_ref', chart_image[440:459, 326:370]))
-            fs.append(pool.submit(ocr, q, 'img_dldvaadj_pre', chart_image[440:459, 387:436]))
-            fs.append(pool.submit(ocr, q, 'img_dldvaadj_pref_pre', chart_image[440:459, 464:497]))
-            fs.append(pool.submit(ocr, q, 'img_va_pre', chart_image[456:475, 387:436]))
-            fs.append(pool.submit(ocr, q, 'img_ivc_pre', chart_image[475:494, 387:436]))
-            fs.append(pool.submit(ocr, q, 'img_dlcoecode_pre', chart_image[491:518, 387:436]))
+            table = get_diffusing_table(chart_image, cur_before_image_file_name)
+            arr = table_to_arr(table, cur_before_image_file_name)
+            print(arr)
+            # fs.append(pool.submit(ocr, q, 'img_pid', chart_image[54:83, 684:776]))
+            # fs.append(pool.submit(ocr, q, 'img_date', chart_image[4:35, 712:801]))
+            # fs.append(pool.submit(ocr, q, 'img_age', chart_image[77:111, 695:737]))
+            # fs.append(pool.submit(ocr, q, 'img_height', chart_image[77:110, 860:902]))
+            # fs.append(pool.submit(ocr, q, 'img_weight', chart_image[105:136, 765:808]))
+            # fs.append(pool.submit(ocr, q, 'img_gender', chart_image[105:135, 881:966]))
+
+            # fs.append(pool.submit(ocr, q, 'img_dlco_ref', chart_image[386:405, 326:370]))
+            # fs.append(pool.submit(ocr, q, 'img_dlco_pre', chart_image[386:405, 387:436]))
+            # fs.append(pool.submit(ocr, q, 'img_dlco_pref_pre', chart_image[386:405, 464:497]))
+            # fs.append(pool.submit(ocr, q, 'img_dladj_ref', chart_image[403:422, 326:370]))
+            # fs.append(pool.submit(ocr, q, 'img_dladj_pre', chart_image[403:422, 387:436]))
+            # fs.append(pool.submit(ocr, q, 'img_dladj_pref_pre', chart_image[403:422, 464:497]))
+            # fs.append(pool.submit(ocr, q, 'img_dlcodva_ref', chart_image[420:440, 326:370]))
+            # fs.append(pool.submit(ocr, q, 'img_dlcodva_pre', chart_image[420:440, 387:436]))
+            # fs.append(pool.submit(ocr, q, 'img_dlcodva_pref_pre', chart_image[420:440, 464:497]))
+            # fs.append(pool.submit(ocr, q, 'img_dldvaadj_ref', chart_image[440:459, 326:370]))
+            # fs.append(pool.submit(ocr, q, 'img_dldvaadj_pre', chart_image[440:459, 387:436]))
+            # fs.append(pool.submit(ocr, q, 'img_dldvaadj_pref_pre', chart_image[440:459, 464:497]))
+            # fs.append(pool.submit(ocr, q, 'img_va_pre', chart_image[456:475, 387:436]))
+            # fs.append(pool.submit(ocr, q, 'img_ivc_pre', chart_image[475:494, 387:436]))
+            # fs.append(pool.submit(ocr, q, 'img_dlcoecode_pre', chart_image[491:518, 387:436]))
             type03_img_cnt += 1
             pass
 
