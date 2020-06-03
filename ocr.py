@@ -1178,16 +1178,6 @@ def process(before_path):
             for ar in arr:
                 for ns in ar:
                     print(ns)
-                    
-            # fs.append(pool.submit(ocr, q, 'img_pid', chart_image[3:35, 710:817]))
-            # fs.append(pool.submit(ocr, q, 'img_date', chart_image[134:160, 726:806]))
-            # fs.append(pool.submit(ocr, q, 'img_age', chart_image[56:85, 712:755]))
-            # fs.append(pool.submit(ocr, q, 'img_height', chart_image[55:87, 871:914]))
-            # fs.append(pool.submit(ocr, q, 'img_weight', chart_image[82:111, 773:816]))
-            # fs.append(pool.submit(ocr, q, 'img_gender', chart_image[80:111, 888:959]))
-
-            # fs.append(pool.submit(ocr, q, 'img_pc_fev1', chart_image[748:781, 755:803]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_pc', chart_image[750:783, 867:928]))
 
             type02_img_cnt += 1
             pass
@@ -1196,29 +1186,26 @@ def process(before_path):
             g_var['img_type'] = 'type03'
             table = get_diffusing_table(chart_image, cur_before_image_file_name)
             arr = table_to_arr(table, cur_before_image_file_name)
-            print(arr)
-            # fs.append(pool.submit(ocr, q, 'img_pid', chart_image[54:83, 684:776]))
-            # fs.append(pool.submit(ocr, q, 'img_date', chart_image[4:35, 712:801]))
-            # fs.append(pool.submit(ocr, q, 'img_age', chart_image[77:111, 695:737]))
-            # fs.append(pool.submit(ocr, q, 'img_height', chart_image[77:110, 860:902]))
-            # fs.append(pool.submit(ocr, q, 'img_weight', chart_image[105:136, 765:808]))
-            # fs.append(pool.submit(ocr, q, 'img_gender', chart_image[105:135, 881:966]))
 
-            # fs.append(pool.submit(ocr, q, 'img_dlco_ref', chart_image[386:405, 326:370]))
-            # fs.append(pool.submit(ocr, q, 'img_dlco_pre', chart_image[386:405, 387:436]))
-            # fs.append(pool.submit(ocr, q, 'img_dlco_pref_pre', chart_image[386:405, 464:497]))
-            # fs.append(pool.submit(ocr, q, 'img_dladj_ref', chart_image[403:422, 326:370]))
-            # fs.append(pool.submit(ocr, q, 'img_dladj_pre', chart_image[403:422, 387:436]))
-            # fs.append(pool.submit(ocr, q, 'img_dladj_pref_pre', chart_image[403:422, 464:497]))
-            # fs.append(pool.submit(ocr, q, 'img_dlcodva_ref', chart_image[420:440, 326:370]))
-            # fs.append(pool.submit(ocr, q, 'img_dlcodva_pre', chart_image[420:440, 387:436]))
-            # fs.append(pool.submit(ocr, q, 'img_dlcodva_pref_pre', chart_image[420:440, 464:497]))
-            # fs.append(pool.submit(ocr, q, 'img_dldvaadj_ref', chart_image[440:459, 326:370]))
-            # fs.append(pool.submit(ocr, q, 'img_dldvaadj_pre', chart_image[440:459, 387:436]))
-            # fs.append(pool.submit(ocr, q, 'img_dldvaadj_pref_pre', chart_image[440:459, 464:497]))
-            # fs.append(pool.submit(ocr, q, 'img_va_pre', chart_image[456:475, 387:436]))
-            # fs.append(pool.submit(ocr, q, 'img_ivc_pre', chart_image[475:494, 387:436]))
-            # fs.append(pool.submit(ocr, q, 'img_dlcoecode_pre', chart_image[491:518, 387:436]))
+            g_var['img_dlco_ref'] = arr[0][0]
+            g_var['img_dlco_pre'] = arr[0][1]
+            g_var['img_dlco_pref_pre'] = arr[0][2]
+            g_var['img_dladj_ref'] = arr[1][0]
+            g_var['img_dladj_pre'] = arr[1][1]
+            g_var['img_dladj_pref_pre'] = arr[1][2]
+            g_var['img_dlcodva_ref'] = arr[2][0]
+            g_var['img_dlcodva_pre'] = arr[2][1]
+            g_var['img_dlcodva_pref_pre'] = arr[2][2]
+            g_var['img_dldvaadj_ref'] = arr[3][0]
+            g_var['img_dldvaadj_pre'] = arr[3][1]
+            g_var['img_dldvaadj_pref_pre'] = arr[3][2]
+            g_var['img_va_pre'] = arr[4][0]
+            g_var['img_ivc_pre'] = arr[5][0]
+            g_var['img_dlcoecode_pre'] = arr[6][0]
+
+            for ar in arr:
+                for ns in ar:
+                    print(ns)
             type03_img_cnt += 1
             pass
 
