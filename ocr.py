@@ -14,6 +14,7 @@ from queue import Queue
 from concurrent.futures import ThreadPoolExecutor
 
 pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
+# pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR-4.0/tesseract.exe'
 pool = ThreadPoolExecutor(8)
 g_var = {}
 
@@ -119,18 +120,14 @@ def get_type06_table(image, file_name):
     table_w = 610
     table_h = 320
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
-    cv2.imshow('table', table)
-    cv2.waitKey(0)
     table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     return table
 
 def table_to_arr(table, file_name, white_list = ''):
-    ocr_res = -1
-    if white_list == '':
-        ocr_res = pytesseract.image_to_string(table, config='-psm 6 digits')
-    else:
-        ocr_res = pytesseract.image_to_string(table, config='-psm 6 tessedit_char_whitelist=' + white_list)
-
+    ocr_res = pytesseract.image_to_string(table, config='-psm 6 digits') # ver 3
+    # ocr_res = pytesseract.image_to_string(table, config='--psm 6 --oem 0') # ver 4
+    # ocr_res = pytesseract.image_to_string(table, config='--psm 6 tessedit_char_whitelist=0123456789.-')
+    # ocr_res = pytesseract.image_to_string(table, config='--psm 6 tessedit_char_whitelist=0123456789.-' + white_list)
     sp = ocr_res.split('\n')
     arr = []
     for s in sp:
@@ -1028,7 +1025,7 @@ def process(before_path):
             g_var['img_type'] = 'type01'
             table = get_type01_type02_table(chart_image, cur_before_image_file_name)
             arr = table_to_arr(table, cur_before_image_file_name)
-
+            
             # fvc dose
             for i in range(0, 5 + 1):
                 g_var['img_fvc_dose_lv' + str(i + 1)] = arr[0][i]
@@ -1424,7 +1421,6 @@ def process(before_path):
 
         elif ocr_for_title_searching(chart_image[6:40, 245:367]) == 'CATHOLIC' and ocr_for_title_searching(chart_image[323:596, 657:914]) == '':
             g_var['img_type'] = 'type05'
-
             table = get_type05_table(chart_image, cur_before_image_file_name)
             arr = table_to_arr(table, cur_before_image_file_name, '<')
             
@@ -1501,7 +1497,12 @@ def process(before_path):
             g_var['img_type'] = 'type06'
 
             table = get_type06_table(chart_image, cur_before_image_file_name)
-            arr = table_to_arr(table, cur_before_image_file_name)
+            arr = table_to_arr(table, cur_before_image_file_name, '<')
+
+            for ar in arr:
+                for ns in ar:
+                    print(ns)
+                print()
 
             # fs.append(pool.submit(ocr, q, 'img_pid', chart_image[120:150, 605:687]))
             # fs.append(pool.submit(ocr, q, 'img_date', chart_image[146:175, 625:707]))
