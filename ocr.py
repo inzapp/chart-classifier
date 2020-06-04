@@ -17,12 +17,12 @@ pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
 pool = ThreadPoolExecutor(8)
 g_var = {}
 
-print('header loading: methacholine_aridol...')
-header_methacholine_aridol = cv2.imread('headers/methacholine_aridol.jpg', cv2.IMREAD_COLOR)
-print('header loading: diffusing...')
-header_diffusing = cv2.imread('headers/difussing.jpg', cv2.IMREAD_COLOR)
-print('header loading: spirometry...')
-header_spirometry = cv2.imread('headers/spirometry.jpg', cv2.IMREAD_COLOR)
+print('header loading: type01, type02...')
+header_type01_type02 = cv2.imread('headers/type01_type02.jpg', cv2.IMREAD_COLOR)
+print('header loading: type03...')
+header_type03 = cv2.imread('headers/type03.jpg', cv2.IMREAD_COLOR)
+print('header loading: type04...')
+header_type04 = cv2.imread('headers/type04.jpg', cv2.IMREAD_COLOR)
 print('header loading: type05...')
 header_type05 = cv2.imread('headers/type05.jpg', cv2.IMREAD_COLOR)
 
@@ -37,9 +37,9 @@ def detect(image, template, ratio):
 def get_max_matched_res(image, template):
     fs = []
     ratio = 0.980
-    for i in range(1, 8 + 1):
+    for i in range(1, 6 + 1):
         fs.append(pool.submit(detect, image, template, ratio))
-        ratio += 0.005
+        ratio += 0.0005
 
     max_template_match_val  = -1
     max_template_match_loc = -1
@@ -54,79 +54,45 @@ def get_max_matched_res(image, template):
     return [max_template_match_img, max_template_match_loc]
 
 
-def get_methacholine_aridol_table(image, file_name):
-    res = get_max_matched_res(image, header_methacholine_aridol)
+def get_type01_type02_table(image, file_name):
+    res = get_max_matched_res(image, header_type01_type02)
     img = res[0]
     loc = res[1]
-    h, w, ch = header_methacholine_aridol.shape
+    h, w, ch = header_type01_type02.shape
     table_x = loc[0]
     table_y = loc[1] + h
     table_w = w
     table_h = 360
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
     table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    
-    # if os.path.exists ('progress') == 0:
-    #     os.mkdir('progress')
-    # sp = file_name.split('.')
-    # sp[0] = 'progress/' + sp[0]
-    # table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
-    # cv2.imwrite(sp[0] + '_grayscale.' + sp[1], table)
-    # tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
-    # cv2.imwrite(sp[0] + '_threshold.' + sp[1], table)
-    # table = cv2.blur(table, (2, 2))
-    # cv2.imwrite(sp[0] + '_blur.' + sp[1], table)
     return table
 
 
-def get_diffusing_table(image, file_name):
-    res = get_max_matched_res(image, header_diffusing)
+def get_type03_table(image, file_name):
+    res = get_max_matched_res(image, header_type03)
     img = res[0]
     loc = res[1]
-    h, w, ch = header_diffusing.shape
+    h, w, ch = header_type03.shape
     table_x = loc[0]
     table_y = loc[1] + h
     table_w = 220
     table_h = 140
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
     table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    
-    # if os.path.exists ('progress') == 0:
-    #     os.mkdir('progress')
-    # sp = file_name.split('.')
-    # sp[0] = 'progress/' + sp[0]
-    # table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
-    # cv2.imwrite(sp[0] + '_grayscale.' + sp[1], table)
-    # tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
-    # cv2.imwrite(sp[0] + '_threshold.' + sp[1], table)
-    # table = cv2.blur(table, (2, 2))
-    # cv2.imwrite(sp[0] + '_blur.' + sp[1], table)
     return table
 
 
-def get_spirometry_table(image, file_name):
-    res = get_max_matched_res(image, header_spirometry)
+def get_type04_table(image, file_name):
+    res = get_max_matched_res(image, header_type04)
     img = res[0]
     loc = res[1]
-    h, w, ch = header_spirometry.shape
+    h, w, ch = header_type04.shape
     table_x = loc[0]
     table_y = loc[1] + h
     table_w = w
     table_h = 900
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
     table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    
-    
-    # if os.path.exists ('progress') == 0:
-    #     os.mkdir('progress')
-    # sp = file_name.split('.')
-    # sp[0] = 'progress/' + sp[0]
-    # table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
-    # cv2.imwrite(sp[0] + '_grayscale.' + sp[1], table)
-    # tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
-    # cv2.imwrite(sp[0] + '_threshold.' + sp[1], table)
-    # table = cv2.blur(table, (2, 2))
-    # cv2.imwrite(sp[0] + '_blur.' + sp[1], table)
     return table
 
 
@@ -141,18 +107,6 @@ def get_type05_table(image, file_name):
     table_h = 300
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
     table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    
-    
-    # if os.path.exists ('progress') == 0:
-    #     os.mkdir('progress')
-    # sp = file_name.split('.')
-    # sp[0] = 'progress/' + sp[0]
-    # table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
-    # cv2.imwrite(sp[0] + '_grayscale.' + sp[1], table)
-    # tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
-    # cv2.imwrite(sp[0] + '_threshold.' + sp[1], table)
-    # table = cv2.blur(table, (2, 2))
-    # cv2.imwrite(sp[0] + '_blur.' + sp[1], table)
     return table
 
 def table_to_arr(table, file_name):
@@ -192,8 +146,7 @@ def ocr_for_title_searching(submat):
     submat = cv2.resize(submat, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     submat = cv2.copyMakeBorder(submat, 20, 20, 20, 20, cv2.BORDER_CONSTANT, value=[255, 255, 255])
     res = pytesseract.image_to_string(submat, config='-psm 6')
-    print('ocr_for_title_searching')
-    print(res)
+    print('ocr_for_title_searching : ' + res)
     return res
 
 
@@ -1053,7 +1006,7 @@ def process(before_path):
         #[s_y:e_y, s_x:e_x]
         if ocr_for_title_searching(chart_image[167:223, 239:445]) == 'Methacholine':
             g_var['img_type'] = 'type01'
-            table = get_methacholine_aridol_table(chart_image, cur_before_image_file_name)
+            table = get_type01_type02_table(chart_image, cur_before_image_file_name)
             arr = table_to_arr(table, cur_before_image_file_name)
 
             # fvc dose
@@ -1139,7 +1092,7 @@ def process(before_path):
 
         elif ocr_for_title_searching(chart_image[177:217, 156:247]) == 'aridol':
             g_var['img_type'] = 'type02'
-            table = get_methacholine_aridol_table(chart_image, cur_before_image_file_name)
+            table = get_type01_type02_table(chart_image, cur_before_image_file_name)
             arr = table_to_arr(table, cur_before_image_file_name)
 
             # fvc dose
@@ -1226,7 +1179,7 @@ def process(before_path):
     
         elif ocr_for_title_searching(chart_image[360:390, 38:111]) == 'Diffusing':
             g_var['img_type'] = 'type03'
-            table = get_diffusing_table(chart_image, cur_before_image_file_name)
+            table = get_type03_table(chart_image, cur_before_image_file_name)
             arr = table_to_arr(table, cur_before_image_file_name)
 
             g_var['img_dlco_ref'] = arr[0][0]
@@ -1255,7 +1208,7 @@ def process(before_path):
         elif ocr_for_title_searching(chart_image[266:295, 1:89]) == 'Spirometry':
             g_var['img_type'] = 'type04'
 
-            table = get_spirometry_table(chart_image, cur_before_image_file_name)
+            table = get_type04_table(chart_image, cur_before_image_file_name)
             arr = table_to_arr(table, cur_before_image_file_name)
 
             # spirometry section start
