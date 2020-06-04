@@ -1499,6 +1499,83 @@ def process(before_path):
             table = get_type06_table(chart_image, cur_before_image_file_name)
             arr = table_to_arr(table, cur_before_image_file_name, '<')
 
+            g_var['img_fvc_pred'] = arr[0][0]
+            g_var['img_fvc_pre'] = arr[0][0]
+            g_var['img_fvc_pre_ppred'] = arr[0][0]
+            g_var['img_fvc_post'] = arr[0][0]
+            g_var['img_fvc_post_ppred'] = arr[0][0]
+            g_var['img_fvc_pchg'] = arr[0][0]
+
+            g_var['img_fev1_pred'] = arr[0][0]
+            g_var['img_fev1_pre'] = arr[0][0]
+            g_var['img_fev1_pre_ppred'] = arr[0][0]
+            g_var['img_fev1_post'] = arr[0][0]
+            g_var['img_fev1_post_ppred'] = arr[0][0]
+            g_var['img_fev1_pchg'] = arr[0][0]
+
+            g_var['img_fev1dfvc_pred'] = arr[0][0]
+            g_var['img_fev1dfvc_pre'] = arr[0][0]
+            g_var['img_fev1dfvc_post'] = arr[0][0]
+
+            g_var['img_fef25_75_pred'] = arr[0][0]
+            g_var['img_fef25_75_pre'] = arr[0][0]
+            g_var['img_fef25_75_pre_ppred'] = arr[0][0]
+            g_var['img_fef25_75_post'] = arr[0][0]
+            g_var['img_fef25_75_post_ppred'] = arr[0][0]
+            g_var['img_fef25_75_pchg'] = arr[0][0]
+
+            g_var['img_isofef25_75_pred'] = arr[0][0]
+            g_var['img_isofef25_75_pre'] = arr[0][0]
+            g_var['img_isofef25_75_pre_ppred'] = arr[0][0]
+            g_var['img_isofef25_75_post'] = arr[0][0]
+            g_var['img_isofef25_75_post_ppred'] = arr[0][0]
+            g_var['img_isofef25_75_pchg'] = arr[0][0]
+
+            g_var['img_fef75_85_pred'] = arr[0][0]
+            g_var['img_fef75_85_pre'] = arr[0][0]
+            g_var['img_fef75_85_pre_ppred'] = arr[0][0]
+            g_var['img_fef75_85_post'] = arr[0][0]
+            g_var['img_fef75_85_post_ppred'] = arr[0][0]
+            g_var['img_fef75_85_pchg'] = arr[0][0]
+
+            g_var['img_pef_pred'] = arr[0][0]
+            g_var['img_pef_pre'] = arr[0][0]
+            g_var['img_pef_pre_ppred'] = arr[0][0]
+            g_var['img_pef_post'] = arr[0][0]
+            g_var['img_pef_post_ppred'] = arr[0][0]
+            g_var['img_pef_pchg'] = arr[0][0]
+
+            g_var['img_fet100_pre'] = arr[0][0]
+            g_var['img_fet100_post'] = arr[0][0]
+            g_var['img_fet100_pchg'] = arr[0][0]
+
+            g_var['img_fivc_pred'] = arr[0][0]
+            g_var['img_fivc_pre'] = arr[0][0]
+            g_var['img_fivc_pre_ppred'] = arr[0][0]
+            g_var['img_fivc_post'] = arr[0][0]
+            g_var['img_fivc_post_ppred'] = arr[0][0]
+            g_var['img_fivc_pchg'] = arr[0][0]
+
+            g_var['img_fiv1_pre'] = arr[0][0]
+            g_var['img_fiv1_post'] = arr[0][0]
+            g_var['img_fiv1_pchg'] = arr[0][0]
+
+            g_var['img_fefdfif50_pred'] = arr[0][0]
+            g_var['img_fefdfif50_pre'] = arr[0][0]
+            g_var['img_fefdfif50_pre_ppred'] = arr[0][0]
+            g_var['img_fefdfif50_post'] = arr[0][0]
+            g_var['img_fefdfif50_post_ppred'] = arr[0][0]
+            g_var['img_fefdfif50_pchg'] = arr[0][0]
+
+            g_var['img_volextrap_pre'] = arr[0][0]
+            g_var['img_volextrap_post'] = arr[0][0]
+            g_var['img_volextrap_pchg'] = arr[0][0]
+
+            g_var['img_fvlecode_pre'] = arr[0][0]
+            g_var['img_fvlecode_post'] = arr[0][0]
+
+            g_var['img_mvv_pred'] = arr[0][0]
+
             for ar in arr:
                 for ns in ar:
                     print(ns)
