@@ -54,74 +54,17 @@ def get_max_matched_res(image, template):
     return [max_template_match_img, max_template_match_loc]
 
 
-def get_type01_type02_table(image, file_name):
-    res = get_max_matched_res(image, header_type01_type02)
+def get_table(image, file_name, header, table_w, table_h):
+    res = get_max_matched_res(image, header)
     img = res[0]
     loc = res[1]
-    h, w, ch = header_type01_type02.shape
+    h, w, ch = header.shape
     table_x = loc[0]
     table_y = loc[1] + h
-    table_w = w
-    table_h = 360
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
     table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     return table
 
-
-def get_type03_table(image, file_name):
-    res = get_max_matched_res(image, header_type03)
-    img = res[0]
-    loc = res[1]
-    h, w, ch = header_type03.shape
-    table_x = loc[0]
-    table_y = loc[1] + h
-    table_w = 220
-    table_h = 140
-    table = img[table_y:table_y+table_h, table_x:table_x+table_w]
-    table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    return table
-
-
-def get_type04_table(image, file_name):
-    res = get_max_matched_res(image, header_type04)
-    img = res[0]
-    loc = res[1]
-    h, w, ch = header_type04.shape
-    table_x = loc[0]
-    table_y = loc[1] + h
-    table_w = w
-    table_h = 900
-    table = img[table_y:table_y+table_h, table_x:table_x+table_w]
-    table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    return table
-
-
-def get_type05_table(image, file_name):
-    res = get_max_matched_res(image, header_type05)
-    img = res[0]
-    loc = res[1]
-    h, w, ch = header_type05.shape
-    table_x = loc[0]
-    table_y = loc[1] + h
-    table_w = 330
-    table_h = 300
-    table = img[table_y:table_y+table_h, table_x:table_x+table_w]
-    table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    return table
-
-
-def get_type06_table(image, file_name):
-    res = get_max_matched_res(image, header_type06)
-    img = res[0]
-    loc = res[1]
-    h, w, ch = header_type06.shape
-    table_x = loc[0]
-    table_y = loc[1] + h
-    table_w = 610
-    table_h = 320
-    table = img[table_y:table_y+table_h, table_x:table_x+table_w]
-    table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    return table
 
 def table_to_arr(table, file_name, white_list = ''):
     ocr_res = pytesseract.image_to_string(table, config='-psm 6 digits') # ver 3
@@ -1023,7 +966,7 @@ def process(before_path):
         #[s_y:e_y, s_x:e_x]
         if ocr_for_title_searching(chart_image[167:223, 239:445]) == 'Methacholine':
             g_var['img_type'] = 'type01'
-            table = get_type01_type02_table(chart_image, cur_before_image_file_name)
+            table = get_table(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
             arr = table_to_arr(table, cur_before_image_file_name)
             
             # fvc dose
@@ -1109,7 +1052,7 @@ def process(before_path):
 
         elif ocr_for_title_searching(chart_image[177:217, 156:247]) == 'aridol':
             g_var['img_type'] = 'type02'
-            table = get_type01_type02_table(chart_image, cur_before_image_file_name)
+            table = get_table(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
             arr = table_to_arr(table, cur_before_image_file_name)
 
             # fvc dose
@@ -1196,7 +1139,7 @@ def process(before_path):
     
         elif ocr_for_title_searching(chart_image[360:390, 38:111]) == 'Diffusing':
             g_var['img_type'] = 'type03'
-            table = get_type03_table(chart_image, cur_before_image_file_name)
+            table = get_table(chart_image, cur_before_image_file_name, header_type03, 220, 140)
             arr = table_to_arr(table, cur_before_image_file_name)
 
             g_var['img_dlco_ref'] = arr[0][0]
@@ -1225,7 +1168,7 @@ def process(before_path):
         elif ocr_for_title_searching(chart_image[266:295, 1:89]) == 'Spirometry':
             g_var['img_type'] = 'type04'
 
-            table = get_type04_table(chart_image, cur_before_image_file_name)
+            table = get_table(chart_image, cur_before_image_file_name, header_type04, 430, 900)
             arr = table_to_arr(table, cur_before_image_file_name)
 
             # spirometry section start
@@ -1421,7 +1364,7 @@ def process(before_path):
 
         elif ocr_for_title_searching(chart_image[6:40, 245:367]) == 'CATHOLIC' and ocr_for_title_searching(chart_image[323:596, 657:914]) == '':
             g_var['img_type'] = 'type05'
-            table = get_type05_table(chart_image, cur_before_image_file_name)
+            table = get_table(chart_image, cur_before_image_file_name, header_type05, 330, 300)
             arr = table_to_arr(table, cur_before_image_file_name, '<')
             
             i = 0
@@ -1496,7 +1439,7 @@ def process(before_path):
         elif ocr_for_title_searching(chart_image[6:40, 245:367]) == 'CATHOLIC':
             g_var['img_type'] = 'type06'
 
-            table = get_type06_table(chart_image, cur_before_image_file_name)
+            table = get_table(chart_image, cur_before_image_file_name, header_type06, 610, 310)
             arr = table_to_arr(table, cur_before_image_file_name, '<')
 
             i = 0
