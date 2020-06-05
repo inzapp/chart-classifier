@@ -108,7 +108,6 @@ def ocr_for_title_searching(submat):
     submat = cv2.resize(submat, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     submat = cv2.copyMakeBorder(submat, 20, 20, 20, 20, cv2.BORDER_CONSTANT, value=[255, 255, 255])
     res = pytesseract.image_to_string(submat, config='-psm 6')
-    # print('ocr_for_title_searching : ' + res)
     return res
 
 
@@ -949,7 +948,6 @@ def process(before_path):
     before_image_file_paths = []
     if len(before_path) == 1 and os.path.isdir(before_path[0]) == 1:
         before_image_file_paths = glob.glob(before_path[0] + "/*.jpg")
-        print(before_image_file_paths)
     else:
         before_image_file_paths = before_path
 
@@ -987,6 +985,7 @@ def process(before_path):
         title_res = []
         for f in fs:
             title_res.append(f.result())
+        fs = []
         
         #[s_y:e_y, s_x:e_x]
         if title_res[0] == 'Methacholine':
