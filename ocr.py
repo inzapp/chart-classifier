@@ -24,6 +24,8 @@ header_type03 = cv2.imread('headers/type03.jpg', cv2.IMREAD_COLOR)
 header_type04 = cv2.imread('headers/type04.jpg', cv2.IMREAD_COLOR)
 header_type05 = cv2.imread('headers/type05.jpg', cv2.IMREAD_COLOR)
 header_type06 = cv2.imread('headers/type06.jpg', cv2.IMREAD_COLOR)
+header_type07_1 = cv2.imread('headers/type07_1.jpg', cv2.IMREAD_COLOR)
+header_type07_2 = cv2.imread('headers/type07_2.jpg', cv2.IMREAD_COLOR)
 print('header loading end')
 
 
@@ -1550,136 +1552,298 @@ def process(before_path):
 
         elif ocr_for_title_searching(chart_image[66:99, 538:647]) == 'REPORT':
             g_var['img_type'] = 'type07'
-            fs.append(pool.submit(ocr, q, 'img_pid', chart_image[94:121, 601:693]))
-            fs.append(pool.submit(ocr, q, 'img_date', chart_image[118:142, 623:706]))
-            fs.append(pool.submit(ocr, q, 'img_age', chart_image[139:161, 91:123]))
-            fs.append(pool.submit(ocr, q, 'img_height', chart_image[154:186, 150:191]))
-            fs.append(pool.submit(ocr, q, 'img_weight', chart_image[159:183, 301:357]))
-            fs.append(pool.submit(ocr, q, 'img_gender', chart_image[120:145, 119:199]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_ref', chart_image[249:271, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_pre', chart_image[249:271, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_post', chart_image[249:271, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri1', chart_image[468:494, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri2', chart_image[468:494, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri3', chart_image[468:494, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri4', chart_image[468:494, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri5', chart_image[468:494, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri6', chart_image[468:494, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri7', chart_image[468:494, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri8', chart_image[468:494, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_pref_pre', chart_image[249:271, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_pref_post', chart_image[249:271, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_pchg', chart_image[249:271, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_ref', chart_image[270:289, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_pre', chart_image[270:289, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_post', chart_image[270:289, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri1', chart_image[488:513, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri2', chart_image[488:513, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri3', chart_image[488:513, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri4', chart_image[488:513, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri5', chart_image[488:513, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri6', chart_image[488:513, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri7', chart_image[488:513, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri8', chart_image[488:513, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_pref_pre', chart_image[270:289, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_pref_post', chart_image[270:289, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_pchg', chart_image[270:289, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_ref', chart_image[289:306, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_pre', chart_image[289:306, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_post', chart_image[289:306, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri1', chart_image[509:529, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri2', chart_image[509:529, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri3', chart_image[509:529, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri4', chart_image[509:529, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri5', chart_image[509:529, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri6', chart_image[509:529, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri7', chart_image[509:529, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri8', chart_image[509:529, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_ref', chart_image[301:326, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_pre', chart_image[301:326, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_post', chart_image[301:326, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri1', chart_image[526:548, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri2', chart_image[526:548, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri3', chart_image[526:548, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri4', chart_image[526:548, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri5', chart_image[526:548, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri6', chart_image[526:548, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri7', chart_image[526:548, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri8', chart_image[526:548, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_pref_pre', chart_image[301:326, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_pref_post', chart_image[301:326, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_pchg', chart_image[301:326, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_pef_ref', chart_image[322:344, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_pef_pre', chart_image[322:344, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_pef_post', chart_image[322:344, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri1', chart_image[546:565, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri2', chart_image[546:565, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri3', chart_image[546:565, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri4', chart_image[546:565, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri5', chart_image[546:565, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri6', chart_image[546:565, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri7', chart_image[546:565, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri8', chart_image[546:565, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_pef_pref_pre', chart_image[322:344, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_pef_pref_post', chart_image[322:344, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_pef_pchg', chart_image[322:344, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_peft_pchg', chart_image[340:360, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_peft_pre', chart_image[340:360, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_peft_post', chart_image[340:360, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri1', chart_image[562:584, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri2', chart_image[562:584, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri3', chart_image[562:584, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri4', chart_image[562:584, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri5', chart_image[562:584, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri6', chart_image[562:584, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri7', chart_image[562:584, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri8', chart_image[562:584, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_pchg', chart_image[358:378, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_pre', chart_image[358:378, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_post', chart_image[358:378, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri1', chart_image[580:600, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri2', chart_image[580:600, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri3', chart_image[580:600, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri4', chart_image[580:600, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri5', chart_image[580:600, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri6', chart_image[580:600, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri7', chart_image[580:600, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri8', chart_image[580:600, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_ref', chart_image[376:398, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_pre', chart_image[376:398, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_post', chart_image[376:398, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_pref_pre', chart_image[376:398, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_pref_post', chart_image[376:398, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_pchg', chart_image[376:398, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri1', chart_image[598:618, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri2', chart_image[598:618, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri3', chart_image[598:618, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri4', chart_image[598:618, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri5', chart_image[598:618, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri6', chart_image[598:618, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri7', chart_image[598:618, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri8', chart_image[598:618, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_pchg', chart_image[393:414, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_pre', chart_image[393:414, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_post', chart_image[393:414, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri1', chart_image[614:636, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri2', chart_image[614:636, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri3', chart_image[614:636, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri4', chart_image[614:636, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri5', chart_image[614:636, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri6', chart_image[614:636, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri7', chart_image[614:636, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri8', chart_image[614:636, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_pre', chart_image[412:434, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_post', chart_image[412:434, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri1', chart_image[635:650, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri2', chart_image[635:650, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri3', chart_image[635:650, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri4', chart_image[635:650, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri5', chart_image[635:650, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri6', chart_image[635:650, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri7', chart_image[635:650, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri8', chart_image[635:650, 764:805]))
+
+            table = get_table(chart_image, cur_before_image_file_name, header_type07_1, 400, 185)
+            arr = table_to_arr(table, cur_before_image_file_name)
+
+            # best data chart start
+            i = 0
+            g_var['img_fvc_ref'] = arr[i][0]
+            g_var['img_fvc_pre'] = arr[i][1]
+            g_var['img_fvc_pref_pre'] = arr[i][2]
+            g_var['img_fvc_post'] = arr[i][3]
+            g_var['img_fvc_pref_post'] = arr[i][4]
+            g_var['img_fvc_pchg'] = arr[i][5]
+
+            i += 1
+            g_var['img_fev1_ref'] = arr[i][0]
+            g_var['img_fev1_pre'] = arr[i][1]
+            g_var['img_fev1_pref_pre'] = arr[i][2]
+            g_var['img_fev1_post'] = arr[i][3]
+            g_var['img_fev1_pref_post'] = arr[i][4]
+            g_var['img_fev1_pchg'] = arr[i][5]
+
+            i += 1
+            g_var['img_fev1dfvc_ref'] = arr[i][0]
+            g_var['img_fev1dfvc_pre'] = arr[i][1]
+            g_var['img_fev1dfvc_post'] = arr[i][2]
+
+            i += 1
+            g_var['img_fef25_75_ref'] = arr[i][0]
+            g_var['img_fef25_75_pre'] = arr[i][1]
+            g_var['img_fef25_75_pref_pre'] = arr[i][2]
+            g_var['img_fef25_75_post'] = arr[i][3]
+            g_var['img_fef25_75_pref_post'] = arr[i][4]
+            g_var['img_fef25_75_pchg'] = arr[i][5]
+
+            i += 1
+            g_var['img_pef_ref'] = arr[i][0]
+            g_var['img_pef_pre'] = arr[i][1]
+            g_var['img_pef_pref_pre'] = arr[i][2]
+            g_var['img_pef_post'] = arr[i][3]
+            g_var['img_pef_pref_post'] = arr[i][4]
+            g_var['img_pef_pchg'] = arr[i][5]
+
+            i += 1
+            g_var['img_peft_pre'] = arr[i][0]
+            g_var['img_peft_post'] = arr[i][1]
+            g_var['img_peft_pchg'] = arr[i][2]
+
+            i += 1
+            g_var['img_fet100_pre'] = arr[i][0]
+            g_var['img_fet100_post'] = arr[i][1]
+            g_var['img_fet100_pchg'] = arr[i][2]
+
+            i += 1
+            g_var['img_fivc_ref'] = arr[i][0]
+            g_var['img_fivc_pre'] = arr[i][1]
+            g_var['img_fivc_pref_pre'] = arr[i][2]
+            g_var['img_fivc_post'] = arr[i][3]
+            g_var['img_fivc_pref_post'] = arr[i][4]
+            g_var['img_fivc_pchg'] = arr[i][5]
+
+            i += 1
+            if len(arr[i]) == 3:
+                g_var['img_volextrap_pre'] = arr[i][0]
+                g_var['img_volextrap_post'] = arr[i][1]
+                g_var['img_volextrap_pchg'] = arr[i][2]
+            else:
+                g_var['img_volextrap_post'] = arr[i][0]
+
+            i += 1
+            g_var['img_fvlecode_pre'] = arr[i][0]
+            g_var['img_fvlecode_post'] = arr[i][1]
+            # best data chart end
+
+            # all trials chart start
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri1', chart_image[468:494, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri2', chart_image[468:494, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri3', chart_image[468:494, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri4', chart_image[468:494, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri5', chart_image[468:494, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri6', chart_image[468:494, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri7', chart_image[468:494, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri8', chart_image[468:494, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri1', chart_image[488:513, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri2', chart_image[488:513, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri3', chart_image[488:513, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri4', chart_image[488:513, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri5', chart_image[488:513, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri6', chart_image[488:513, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri7', chart_image[488:513, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri8', chart_image[488:513, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri1', chart_image[509:529, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri2', chart_image[509:529, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri3', chart_image[509:529, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri4', chart_image[509:529, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri5', chart_image[509:529, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri6', chart_image[509:529, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri7', chart_image[509:529, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri8', chart_image[509:529, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri1', chart_image[526:548, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri2', chart_image[526:548, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri3', chart_image[526:548, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri4', chart_image[526:548, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri5', chart_image[526:548, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri6', chart_image[526:548, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri7', chart_image[526:548, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri8', chart_image[526:548, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri1', chart_image[546:565, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri2', chart_image[546:565, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri3', chart_image[546:565, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri4', chart_image[546:565, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri5', chart_image[546:565, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri6', chart_image[546:565, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri7', chart_image[546:565, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri8', chart_image[546:565, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri1', chart_image[562:584, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri2', chart_image[562:584, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri3', chart_image[562:584, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri4', chart_image[562:584, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri5', chart_image[562:584, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri6', chart_image[562:584, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri7', chart_image[562:584, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri8', chart_image[562:584, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri1', chart_image[580:600, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri2', chart_image[580:600, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri3', chart_image[580:600, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri4', chart_image[580:600, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri5', chart_image[580:600, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri6', chart_image[580:600, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri7', chart_image[580:600, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri8', chart_image[580:600, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri1', chart_image[598:618, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri2', chart_image[598:618, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri3', chart_image[598:618, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri4', chart_image[598:618, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri5', chart_image[598:618, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri6', chart_image[598:618, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri7', chart_image[598:618, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri8', chart_image[598:618, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri1', chart_image[614:636, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri2', chart_image[614:636, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri3', chart_image[614:636, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri4', chart_image[614:636, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri5', chart_image[614:636, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri6', chart_image[614:636, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri7', chart_image[614:636, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri8', chart_image[614:636, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri1', chart_image[635:650, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri2', chart_image[635:650, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri3', chart_image[635:650, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri4', chart_image[635:650, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri5', chart_image[635:650, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri6', chart_image[635:650, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri7', chart_image[635:650, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri8', chart_image[635:650, 764:805]))
+            # all trials chart end
+
+
+
+
+
+
+
+
+
+
+
+
+
+            # fs.append(pool.submit(ocr, q, 'img_fvc_ref', chart_image[249:271, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_pre', chart_image[249:271, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_post', chart_image[249:271, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri1', chart_image[468:494, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri2', chart_image[468:494, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri3', chart_image[468:494, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri4', chart_image[468:494, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri5', chart_image[468:494, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri6', chart_image[468:494, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri7', chart_image[468:494, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_tri8', chart_image[468:494, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_pref_pre', chart_image[249:271, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_pref_post', chart_image[249:271, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fvc_pchg', chart_image[249:271, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_ref', chart_image[270:289, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_pre', chart_image[270:289, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_post', chart_image[270:289, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri1', chart_image[488:513, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri2', chart_image[488:513, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri3', chart_image[488:513, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri4', chart_image[488:513, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri5', chart_image[488:513, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri6', chart_image[488:513, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri7', chart_image[488:513, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_tri8', chart_image[488:513, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_pref_pre', chart_image[270:289, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_pref_post', chart_image[270:289, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1_pchg', chart_image[270:289, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_ref', chart_image[289:306, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_pre', chart_image[289:306, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_post', chart_image[289:306, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri1', chart_image[509:529, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri2', chart_image[509:529, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri3', chart_image[509:529, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri4', chart_image[509:529, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri5', chart_image[509:529, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri6', chart_image[509:529, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri7', chart_image[509:529, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri8', chart_image[509:529, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_ref', chart_image[301:326, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_pre', chart_image[301:326, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_post', chart_image[301:326, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri1', chart_image[526:548, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri2', chart_image[526:548, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri3', chart_image[526:548, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri4', chart_image[526:548, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri5', chart_image[526:548, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri6', chart_image[526:548, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri7', chart_image[526:548, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri8', chart_image[526:548, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_pref_pre', chart_image[301:326, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_pref_post', chart_image[301:326, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fef25_75_pchg', chart_image[301:326, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_ref', chart_image[322:344, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_pre', chart_image[322:344, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_post', chart_image[322:344, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri1', chart_image[546:565, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri2', chart_image[546:565, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri3', chart_image[546:565, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri4', chart_image[546:565, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri5', chart_image[546:565, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri6', chart_image[546:565, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri7', chart_image[546:565, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_tri8', chart_image[546:565, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_pref_pre', chart_image[322:344, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_pref_post', chart_image[322:344, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_pef_pchg', chart_image[322:344, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_pchg', chart_image[340:360, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_pre', chart_image[340:360, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_post', chart_image[340:360, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri1', chart_image[562:584, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri2', chart_image[562:584, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri3', chart_image[562:584, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri4', chart_image[562:584, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri5', chart_image[562:584, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri6', chart_image[562:584, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri7', chart_image[562:584, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_peft_tri8', chart_image[562:584, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_pchg', chart_image[358:378, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_pre', chart_image[358:378, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_post', chart_image[358:378, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri1', chart_image[580:600, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri2', chart_image[580:600, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri3', chart_image[580:600, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri4', chart_image[580:600, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri5', chart_image[580:600, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri6', chart_image[580:600, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri7', chart_image[580:600, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fet100_tri8', chart_image[580:600, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_ref', chart_image[376:398, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_pre', chart_image[376:398, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_post', chart_image[376:398, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_pref_pre', chart_image[376:398, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_pref_post', chart_image[376:398, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_pchg', chart_image[376:398, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri1', chart_image[598:618, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri2', chart_image[598:618, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri3', chart_image[598:618, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri4', chart_image[598:618, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri5', chart_image[598:618, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri6', chart_image[598:618, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri7', chart_image[598:618, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fivc_tri8', chart_image[598:618, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_pchg', chart_image[393:414, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_pre', chart_image[393:414, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_post', chart_image[393:414, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri1', chart_image[614:636, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri2', chart_image[614:636, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri3', chart_image[614:636, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri4', chart_image[614:636, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri5', chart_image[614:636, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri6', chart_image[614:636, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri7', chart_image[614:636, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri8', chart_image[614:636, 764:805]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_pre', chart_image[412:434, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_post', chart_image[412:434, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri1', chart_image[635:650, 315:357]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri2', chart_image[635:650, 363:421]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri3', chart_image[635:650, 445:486]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri4', chart_image[635:650, 491:551]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri5', chart_image[635:650, 572:615]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri6', chart_image[635:650, 630:682]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri7', chart_image[635:650, 696:743]))
+            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri8', chart_image[635:650, 764:805]))
             type07_img_cnt += 1
             pass
 
