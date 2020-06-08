@@ -97,6 +97,35 @@ def table_to_arr(table, file_name, white_list = ''):
     return arr
 
 
+# def table_to_arr_2(table, file_name, row, col, white_list = ''):
+#     height, width, channel = table.shape
+#     cell_width = int(width / row)
+#     cell_height = int(height / col)
+
+#     cfs = []
+#     for y in range(cell_height, height + 1, cell_height):
+#         for x in range(cell_width, width + 1, cell_width):
+#             print(x - cell_width)
+#             print(y - cell_height)
+#             print(x)
+#             print(y)
+#             print()
+#             cell = table[y - cell_height:y, x - cell_width:x]
+#             cv2.imshow('cell', cell)
+#             cv2.waitKey(0)
+#             # cfs.append(pool.submit(ocr_cell, cell))
+
+#     arr = []
+#     for f in cfs:
+#         f.result()
+#     return
+
+
+def ocr_cell(cell):
+    cell = cv2.resize(cell, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    return pytesseract.image_to_string(cell, config='-psm 6 digits')
+
+
 def ocr(q, var_name, submat):
     submat = cv2.resize(submat, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     res = pytesseract.image_to_string(submat, config='-psm 6 digits')
@@ -2374,6 +2403,8 @@ def process(before_path):
 
 
 if __name__ == '__main__':
+    # img = cv2.imread('C:/inz/git/ChartClassifierApi/before/sample.jpg')
+    # arr = table_to_arr_2(img, 'asd', 8, 4, '')
     file = open('result.txt', mode='wt', encoding='utf-8')
     file.write('0')
     file.close()
