@@ -26,6 +26,7 @@ header_type05 = cv2.imread('headers/type05.jpg', cv2.IMREAD_COLOR)
 header_type06 = cv2.imread('headers/type06.jpg', cv2.IMREAD_COLOR)
 header_type07_1 = cv2.imread('headers/type07_1.jpg', cv2.IMREAD_COLOR)
 header_type07_2 = cv2.imread('headers/type07_2.jpg', cv2.IMREAD_COLOR)
+header_type08 = cv2.imread('headers/type08.jpg', cv2.IMREAD_COLOR)
 print('header loading end')
 
 
@@ -65,6 +66,8 @@ def get_table(image, file_name, header, table_w, table_h):
     table_y = loc[1] + h
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
     table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    cv2.imshow('table', table)
+    cv2.waitKey(0)
     return table
 
 
@@ -159,7 +162,6 @@ def process(before_path):
     typeUK_img_cnt = 0
 
     ws, wb = init_worksheet()
-
     for cur_before_image_file_path in before_image_file_paths:
         reset_g_var()
         cur_before_image_file_name = os.path.basename(cur_before_image_file_path)
@@ -1074,50 +1076,85 @@ def process(before_path):
         elif title_res[8] == 'Lung':
             print('type08')
             g_var['img_type'] = 'type08'
-            fs.append(pool.submit(ocr, q, 'img_pid', chart_image[55:85, 685:770]))
-            fs.append(pool.submit(ocr, q, 'img_date', chart_image[3:36, 708:800]))
-            fs.append(pool.submit(ocr, q, 'img_age', chart_image[83:108, 698:728]))
-            fs.append(pool.submit(ocr, q, 'img_height', chart_image[79:110, 862:904]))
-            fs.append(pool.submit(ocr, q, 'img_weight', chart_image[108:134, 758:805]))
-            fs.append(pool.submit(ocr, q, 'img_gender', chart_image[106:137, 882:959]))
-            fs.append(pool.submit(ocr, q, 'img_tlc_ref', chart_image[290:315, 308:360]))
-            fs.append(pool.submit(ocr, q, 'img_tlc_pre', chart_image[290:315, 376:432]))
-            fs.append(pool.submit(ocr, q, 'img_tlc_pref_pre', chart_image[290:315, 451:503]))
-            fs.append(pool.submit(ocr, q, 'img_vc_ref', chart_image[314:335, 308:360]))
-            fs.append(pool.submit(ocr, q, 'img_vc_pre', chart_image[314:335, 376:432]))
-            fs.append(pool.submit(ocr, q, 'img_vc_pref_pre', chart_image[314:335, 451:503]))
-            fs.append(pool.submit(ocr, q, 'img_ic_ref', chart_image[334:355, 308:360]))
-            fs.append(pool.submit(ocr, q, 'img_ic_pre', chart_image[334:355, 376:432]))
-            fs.append(pool.submit(ocr, q, 'img_ic_pref_pre', chart_image[334:355, 451:503]))
-            fs.append(pool.submit(ocr, q, 'img_frcpl_ref', chart_image[353:376, 308:360]))
-            fs.append(pool.submit(ocr, q, 'img_frcpl_pre', chart_image[353:376, 376:432]))
-            fs.append(pool.submit(ocr, q, 'img_frcpl_pref_pre', chart_image[353:376, 451:503]))
-            fs.append(pool.submit(ocr, q, 'img_erv_ref', chart_image[372:395, 308:360]))
-            fs.append(pool.submit(ocr, q, 'img_erv_pre', chart_image[372:395, 376:432]))
-            fs.append(pool.submit(ocr, q, 'img_erv_pref_pre', chart_image[372:395, 451:503]))
-            fs.append(pool.submit(ocr, q, 'img_rv_ref', chart_image[393:414, 308:360]))
-            fs.append(pool.submit(ocr, q, 'img_rv_pre', chart_image[393:414, 376:432]))
-            fs.append(pool.submit(ocr, q, 'img_rv_pref_pre', chart_image[393:414, 451:503]))
-            fs.append(pool.submit(ocr, q, 'img_rvdtlc_ref', chart_image[411:435, 308:360]))
-            fs.append(pool.submit(ocr, q, 'img_rvdtlc_pre', chart_image[411:435, 376:432]))
-            fs.append(pool.submit(ocr, q, 'img_vtg_pre', chart_image[432:455, 385:428]))
-            fs.append(pool.submit(ocr, q, 'img_vt_pre', chart_image[448:478, 382:436]))
-            fs.append(pool.submit(ocr, q, 'img_rawinsp_pre', chart_image[509:530, 384:439]))
-            fs.append(pool.submit(ocr, q, 'img_rawexp_pre', chart_image[530:552, 380:433]))
-            fs.append(pool.submit(ocr, q, 'img_raw_ref', chart_image[548:573, 308:360]))
-            fs.append(pool.submit(ocr, q, 'img_raw_pre', chart_image[548:573, 376:432]))
-            fs.append(pool.submit(ocr, q, 'img_raw_pref_pre', chart_image[548:573, 451:503]))
-            fs.append(pool.submit(ocr, q, 'img_gaw_ref', chart_image[568:591, 308:360]))
-            fs.append(pool.submit(ocr, q, 'img_gaw_pre', chart_image[568:591, 376:432]))
-            fs.append(pool.submit(ocr, q, 'img_gaw_pref_pre', chart_image[568:591, 451:503]))
-            fs.append(pool.submit(ocr, q, 'img_sraw_ref', chart_image[587:611, 308:360]))
-            fs.append(pool.submit(ocr, q, 'img_sraw_pre', chart_image[587:611, 376:432]))
-            fs.append(pool.submit(ocr, q, 'img_sraw_pref_pre', chart_image[587:611, 451:503]))
-            fs.append(pool.submit(ocr, q, 'img_sgaw_ref', chart_image[607:630, 308:360]))
-            fs.append(pool.submit(ocr, q, 'img_sgaw_pre', chart_image[607:630, 376:432]))
-            fs.append(pool.submit(ocr, q, 'img_sgaw_pref_pre', chart_image[607:630, 451:503]))
-            fs.append(pool.submit(ocr, q, 'img_rawvtg_pre', chart_image[628:648, 386:431]))
-            fs.append(pool.submit(ocr, q, 'img_rawf_pre', chart_image[646:668, 391:430]))
+            table = get_table(chart_image, cur_before_image_file_name, header_type08, 215, 390)
+            arr = table_to_arr(table, cur_before_image_file_name)
+
+            i = 0
+            g_var['img_tlc_ref'] = arr[i][0]
+            g_var['img_tlc_pre'] = arr[i][1]
+            g_var['img_tlc_pref_pre'] = arr[i][2]
+
+            i += 1
+            g_var['img_vc_ref'] = arr[i][0]
+            g_var['img_vc_pre'] = arr[i][1]
+            g_var['img_vc_pref_pre'] = arr[i][2]
+
+            i += 1
+            g_var['img_ic_ref'] = arr[i][0]
+            g_var['img_ic_pre'] = arr[i][1]
+            g_var['img_ic_pref_pre'] = arr[i][2]
+
+            i += 1
+            g_var['img_frcpl_ref'] = arr[i][0]
+            g_var['img_frcpl_pre'] = arr[i][1]
+            g_var['img_frcpl_pref_pre'] = arr[i][2]
+
+            i += 1
+            g_var['img_erv_ref'] = arr[i][0]
+            g_var['img_erv_pre'] = arr[i][1]
+            g_var['img_erv_pref_pre'] = arr[i][2]
+
+            i += 1
+            g_var['img_rv_ref'] = arr[i][0]
+            g_var['img_rv_pre'] = arr[i][1]
+            g_var['img_rv_pref_pre'] = arr[i][2]
+
+            i += 1
+            g_var['img_rvdtlc_ref'] = arr[i][0]
+            g_var['img_rvdtlc_pre'] = arr[i][1]
+
+            i += 1
+            g_var['img_vtg_pre'] = arr[i][0]
+
+            i += 1
+            g_var['img_vt_pre'] = arr[i][0]
+
+            i += 1
+            g_var['img_rawinsp_pre'] = arr[i][0]
+
+            i += 1
+            g_var['img_rawexp_pre'] = arr[i][0]
+
+            i += 1
+            g_var['img_raw_ref'] = arr[i][0]
+            g_var['img_raw_pre'] = arr[i][1]
+            g_var['img_raw_pref_pre'] = arr[i][2]
+
+            i += 1
+            g_var['img_gaw_ref'] = arr[i][0]
+            g_var['img_gaw_pre'] = arr[i][1]
+            g_var['img_gaw_pref_pre'] = arr[i][2]
+
+            i += 1
+            g_var['img_sraw_ref'] = arr[i][0]
+            g_var['img_sraw_pre'] = arr[i][1]
+            g_var['img_sraw_pref_pre'] = arr[i][2]
+
+            i += 1
+            g_var['img_sgaw_ref'] = arr[i][0]
+            g_var['img_sgaw_pre'] = arr[i][1]
+            g_var['img_sgaw_pref_pre'] = arr[i][2]
+
+            i += 1
+            g_var['img_rawvtg_pre'] = arr[i][0]
+
+            i += 1
+            g_var['img_rawf_pre'] = arr[i][0]
+            
+            for ar in arr:
+                for ns in ar:
+                    print(ns)
+                print()
             type08_img_cnt += 1
             pass
 
