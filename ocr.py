@@ -16,7 +16,8 @@ from concurrent.futures import ThreadPoolExecutor
 pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
 # pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR-4.0/tesseract.exe'
 pool = ThreadPoolExecutor(8)
-g_var = {}
+pool2 = ThreadPoolExecutor(3)
+# g_var = {}
 
 print('header loading start')
 header_type01_type02 = cv2.imread('headers/type01_type02.jpg', cv2.IMREAD_COLOR)
@@ -28,6 +29,17 @@ header_type07_1 = cv2.imread('headers/type07_1.jpg', cv2.IMREAD_COLOR)
 header_type07_2 = cv2.imread('headers/type07_2.jpg', cv2.IMREAD_COLOR)
 header_type08 = cv2.imread('headers/type08.jpg', cv2.IMREAD_COLOR)
 print('header loading end')
+
+before_image_files_counter = 0
+type01_img_cnt = 0
+type02_img_cnt = 0
+type03_img_cnt = 0
+type04_img_cnt = 0
+type05_img_cnt = 0
+type06_img_cnt = 0
+type07_img_cnt = 0
+type08_img_cnt = 0
+typeUK_img_cnt = 0
 
 
 def detect(image, template, ratio):
@@ -41,7 +53,7 @@ def get_max_matched_res(image, template):
     fs = []
     ratio = 0.980
     for i in range(1, 6 + 1):
-        fs.append(pool.submit(detect, image, template, ratio))
+        fs.append(pool2.submit(detect, image, template, ratio))
         ratio += 0.0005
 
     max_template_match_val  = -1
@@ -140,6 +152,1013 @@ def ocr_for_title_searching(submat):
     res = pytesseract.image_to_string(submat, config='-psm 6')
     return res
 
+
+def process_chart_and_get_v_gar(cur_before_image_file_path):
+    global before_image_files_counter
+    global type01_img_cnt
+    global type02_img_cnt
+    global type03_img_cnt
+    global type04_img_cnt
+    global type05_img_cnt
+    global type06_img_cnt
+    global type07_img_cnt
+    global type08_img_cnt
+    global typeUK_img_cnt
+
+    g_var = new_g_var()
+    cur_before_image_file_name = os.path.basename(cur_before_image_file_path)
+    chart_image = cv2.imread(cur_before_image_file_path)
+
+    q = Queue()
+    fs = []
+    arr = []
+    
+    #[s_y:e_y, s_x:e_x]
+    if ocr_for_title_searching(chart_image[167:223, 239:445]) == 'Methacholine':
+        g_var['img_type'] = 'type01'
+        table = get_table(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
+        arr = table_to_arr(table, cur_before_image_file_name)
+        
+        # fvc dose
+        for i in range(0, 5 + 1):
+            g_var['img_fvc_dose_lv' + str(i + 1)] = arr[0][i]
+
+        # fvc liters
+        g_var['img_fvc_ref'] = arr[1][0]
+        g_var['img_fvc_pre'] = arr[1][1]
+        for i in range(2, 7 + 1):
+            g_var['img_fvc_lv' + str(i - 1)] = arr[1][i]
+
+        # fvc % ref
+        g_var['img_fvc_pref_pre'] = arr[2][0]
+        for i in range(1, 6 + 1):
+            g_var['img_fvc_pref_lv' + str(i)] = arr[2][i]
+
+        # fvc % chg
+        for i in range(0, 5 + 1):
+            g_var['img_fvc_pchg_lv' + str(i + 1)] = arr[3][i]
+
+        # fev1 dose
+        for i in range(0, 5 + 1):
+            g_var['img_fev1_dose_lv' + str(i + 1)] = arr[4][i]
+
+        # fev1 liters
+        g_var['img_fev1_ref'] = arr[5][0]
+        g_var['img_fev1_pre'] = arr[5][1]
+        for i in range(2, 7 + 1):
+            g_var['img_fev1_lv' + str(i - 1)] = arr[5][i]
+
+        # fev1 % ref
+        g_var['img_fev1_pref_pre'] = arr[6][0]
+        for i in range(1, 6 + 1):
+            g_var['img_fev1_pref_lv' + str(i)] = arr[6][i]
+
+        # fev1 % chg
+        for i in range(0, 5 + 1):
+            g_var['img_fev1_pchg_lv' + str(i + 1)] = arr[7][i]
+
+        # fef25-75% dose
+        for i in range(0, 5 + 1):
+            g_var['img_fef25_75_lv' + str(i + 1)] = arr[8][i]
+
+        # fef25-75%
+        for i in range(0, 5 + 1):
+            g_var['img_fef25_75_dose_lv' + str(i + 1)] = arr[9][i]
+
+        # fef25-75% % ref
+        g_var['img_fef25_75_pre'] = arr[10][0]
+        for i in range(1, 6 + 1):
+            g_var['img_fef25_75_lv' + str(i)] = arr[10][i]
+
+        # fef25-75% % chg
+        for i in range(0, 5 + 1):
+            g_var['img_fef25_75_pchg_lv' + str(i + 1)] = arr[11][i]
+        
+        # pef lsec dose
+        for i in range(0, 5 + 1):
+            g_var['img_pef_dose_lv' + str(i + 1)] = arr[12][i]
+
+        # pef lsec
+        g_var['img_pef_ref'] = arr[13][0]
+        g_var['img_pef_pre'] = arr[13][1]
+        for i in range(2, 7 + 1):
+            g_var['img_pef_lv' + str(i - 1)] = arr[13][i]
+
+        # pef lsec % ref
+        g_var['img_pef_pref_pre'] = arr[14][0]
+        for i in range(1, 6 + 1):
+            g_var['img_pef_pref_lv' +  str(i)] = arr[14][i]
+
+        # pef lsec % chg
+        for i in range(0, 5 + 1):
+            g_var['img_pef_pchg_lv' + str(i + 1)] = arr[15][i]
+
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+        type01_img_cnt += 1
+        pass
+
+    elif ocr_for_title_searching(chart_image[177:217, 156:247]) == 'aridol':
+        g_var['img_type'] = 'type02'
+        table = get_table(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
+        arr = table_to_arr(table, cur_before_image_file_name)
+
+        # fvc dose
+        for i in range(0, 8 + 1):
+            g_var['img_fvc_dose_lv' + str(i + 1)] = arr[0][i]
+
+        # fvc liters
+        g_var['img_fvc_ref'] = arr[1][0]
+        g_var['img_fvc_pre'] = arr[1][1]
+        for i in range(2, 10 + 1):
+            g_var['img_fvc_lv' + str(i - 1)] = arr[1][i]
+
+        # fvc % ref
+        g_var['img_fvc_pref_pre'] = arr[2][0]
+        for i in range(1, 9 + 1):
+            g_var['img_fvc_pref_lv' + str(i)] = arr[2][i]
+
+        # fvc % chg
+        for i in range(0, 8 + 1):
+            g_var['img_fvc_pchg_lv' + str(i + 1)] = arr[3][i]
+
+        # fev1 dose
+        for i in range(0, 8 + 1):
+            g_var['img_fev1_dose_lv' + str(i + 1)] = arr[4][i]
+
+        # fev1 liters
+        g_var['img_fev1_ref'] = arr[5][0]
+        g_var['img_fev1_pre'] = arr[5][1]
+        for i in range(2, 10 + 1):
+            g_var['img_fev1_lv' + str(i - 1)] = arr[5][i]
+
+        # fev1 % ref
+        g_var['img_fev1_pref_pre'] = arr[6][0]
+        for i in range(1, 9 + 1):
+            g_var['img_fev1_pref_lv' + str(i)] = arr[6][i]
+
+        # fev1 % chg
+        for i in range(0, 8 + 1):
+            g_var['img_fev1_pchg_lv' + str(i + 1)] = arr[7][i]
+
+        # fef25-75% dose
+        for i in range(0, 8 + 1):
+            g_var['img_fef25_75_lv' + str(i + 1)] = arr[8][i]
+
+        # fef25-75%
+        for i in range(0, 10 + 1):
+            g_var['img_fef25_75_dose_lv' + str(i + 1)] = arr[9][i]
+
+        # fef25-75% % ref
+        g_var['img_fef25_75_pre'] = arr[10][0]
+        for i in range(1, 9 + 1):
+            g_var['img_fef25_75_lv' + str(i)] = arr[10][i]
+
+        # fef25-75% % chg
+        for i in range(0, 8 + 1):
+            g_var['img_fef25_75_pchg_lv' + str(i + 1)] = arr[11][i]
+        
+        # pef lsec dose
+        for i in range(0, 8 + 1):
+            g_var['img_pef_dose_lv' + str(i + 1)] = arr[12][i]
+
+        # pef lsec
+        g_var['img_pef_ref'] = arr[13][0]
+        g_var['img_pef_pre'] = arr[13][1]
+        for i in range(2, 10 + 1):
+            g_var['img_pef_lv' + str(i - 1)] = arr[13][i]
+
+        # pef lsec % ref
+        g_var['img_pef_pref_pre'] = arr[14][0]
+        for i in range(1, 9 + 1):
+            g_var['img_pef_pref_lv' +  str(i)] = arr[14][i]
+
+        # pef lsec % chg
+        for i in range(0, 8 + 1):
+            g_var['img_pef_pchg_lv' + str(i + 1)] = arr[15][i]
+
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+
+        type02_img_cnt += 1
+        pass
+
+    elif ocr_for_title_searching(chart_image[360:390, 38:111]) == 'Diffusing':
+        g_var['img_type'] = 'type03'
+        table = get_table(chart_image, cur_before_image_file_name, header_type03, 220, 140)
+        arr = table_to_arr(table, cur_before_image_file_name)
+
+        g_var['img_dlco_ref'] = arr[0][0]
+        g_var['img_dlco_pre'] = arr[0][1]
+        g_var['img_dlco_pref_pre'] = arr[0][2]
+        g_var['img_dladj_ref'] = arr[1][0]
+        g_var['img_dladj_pre'] = arr[1][1]
+        g_var['img_dladj_pref_pre'] = arr[1][2]
+        g_var['img_dlcodva_ref'] = arr[2][0]
+        g_var['img_dlcodva_pre'] = arr[2][1]
+        g_var['img_dlcodva_pref_pre'] = arr[2][2]
+        g_var['img_dldvaadj_ref'] = arr[3][0]
+        g_var['img_dldvaadj_pre'] = arr[3][1]
+        g_var['img_dldvaadj_pref_pre'] = arr[3][2]
+        g_var['img_va_pre'] = arr[4][0]
+        g_var['img_ivc_pre'] = arr[5][0]
+        g_var['img_dlcoecode_pre'] = arr[6][0]
+
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+        type03_img_cnt += 1
+        pass
+
+    elif ocr_for_title_searching(chart_image[266:295, 1:89]) == 'Spirometry':
+        g_var['img_type'] = 'type04'
+
+        table = get_table(chart_image, cur_before_image_file_name, header_type04, 430, 900)
+        arr = table_to_arr(table, cur_before_image_file_name)
+
+        # spirometry section start
+        g_var['img_fvc_ref'] = arr[0][0]
+        g_var['img_fvc_pre'] = arr[0][1]
+        g_var['img_fvc_pref_pre'] = arr[0][2]
+        if len(arr[0]) == 6:
+            g_var['img_fvc_post'] = arr[0][3]
+            g_var['img_fvc_pref_post'] = arr[0][4]
+            g_var['img_fvc_pchg'] = arr[0][5]
+        
+        g_var['img_fev05_ref'] = arr[1][0]
+        g_var['img_fev05_pre'] = arr[1][1]
+        g_var['img_fev05_pref_pre'] = arr[1][2]
+        if len(arr[1]) == 6:
+            g_var['img_fev05_post'] = arr[1][3]
+            g_var['img_fev05_pref_post'] = arr[1][4]
+            g_var['img_fev05_pchg'] = arr[1][5]
+
+        g_var['img_fev1_ref'] = arr[2][0]
+        g_var['img_fev1_pre'] = arr[2][1]
+        g_var['img_fev1_pref_pre'] = arr[2][2]
+        if len(arr[2]) == 6:
+            g_var['img_fev1_post'] = arr[2][3]
+            g_var['img_fev1_pref_post'] = arr[2][4]
+            g_var['img_fev1_pchg'] = arr[2][5]
+
+        g_var['img_fev1dfvc_ref'] = arr[3][0]
+        g_var['img_fev1dfvc_pre'] = arr[3][1]
+        if len(arr[3]) == 3:
+            g_var['img_fev1dfvc_post'] = arr[3][2]
+
+        g_var['img_fev3dfvc_ref'] = arr[4][0]
+        g_var['img_fev3dfvc_pre'] = arr[4][1]
+        if len(arr[4]) == 3:
+            g_var['img_fev3dfvc_post'] = arr[4][2]
+
+        g_var['img_fef25_75_ref'] = arr[5][0]
+        g_var['img_fef25_75_pre'] = arr[5][1]
+        g_var['img_fef25_75_pref_pre'] = arr[5][2]
+        if len(arr[5]) == 6:
+            g_var['img_fef25_75_post'] = arr[5][3]
+            g_var['img_fef25_75_pref_post'] = arr[5][4]
+            g_var['img_fef25_75_pchg'] = arr[5][5]
+
+        g_var['img_fef75_85_ref'] = arr[6][0]
+        g_var['img_fef75_85_pre'] = arr[6][1]
+        g_var['img_fef75_85_pref_pre'] = arr[6][2]
+        if len(arr[6]) == 6:
+            g_var['img_fef75_85_post'] = arr[6][3]
+            g_var['img_fef75_85_pref_post'] = arr[6][4]
+            g_var['img_fef75_85_pchg'] = arr[6][5]
+
+        g_var['img_fef25_pre'] = arr[7][0]
+        if len(arr[7]) == 3:
+            g_var['img_fef25_post'] = arr[7][1]
+            g_var['img_fef25_pchg'] = arr[7][2]
+
+        g_var['img_fef50_ref'] = arr[8][0]
+        g_var['img_fef50_pre'] = arr[8][1]
+        g_var['img_fef50_pref_pre'] = arr[8][2]
+        if len(arr[8]) == 6:
+            g_var['img_fef50_post'] = arr[8][3]
+            g_var['img_fef50_pref_post'] = arr[8][4]
+            g_var['img_fef50_pchg'] = arr[8][5]
+
+        g_var['img_fef75_ref'] = arr[9][0]
+        g_var['img_fef75_pre'] = arr[9][1]
+        g_var['img_fef75_pref_pre'] = arr[9][2]
+        if len(arr[9]) == 6:
+            g_var['img_fef75_post'] = arr[9][3]
+            g_var['img_fef75_pref_post'] = arr[9][4]
+            g_var['img_fef75_pchg'] = arr[9][5]
+
+        g_var['img_fef200_1200_ref'] = arr[10][0]
+        g_var['img_fef200_1200_pre'] = arr[10][1]
+        g_var['img_fef200_1200_pref_pre'] = arr[10][2]
+        if len(arr[10]) == 6:
+            g_var['img_fef200_1200_post'] = arr[10][3]
+            g_var['img_fef200_1200_pref_post'] = arr[10][4]
+            g_var['img_fef200_1200_pchg'] = arr[10][5]
+
+        g_var['img_pef_ref'] = arr[11][0]
+        g_var['img_pef_pre'] = arr[11][1]
+        g_var['img_pef_pref_pre'] = arr[11][2]
+        if len(arr[11]) == 6:
+            g_var['img_pef_post'] = arr[11][3]
+            g_var['img_pef_pref_post'] = arr[11][4]
+            g_var['img_pef_pchg'] = arr[11][5]
+
+        g_var['img_fivc_ref'] = arr[12][0]
+        g_var['img_fivc_pre'] = arr[12][1]
+        g_var['img_fivc_pref_pre'] = arr[12][2]
+        if len(arr[12]) == 6:
+            g_var['img_fivc_post'] = arr[12][3]
+            g_var['img_fivc_pref_post'] = arr[12][4]
+            g_var['img_fivc_pchg'] = arr[12][5]
+
+        g_var['img_fvlecode_pre'] = arr[13][0]
+        if len(arr[13]) == 2:
+            g_var['img_fvlecode_post'] = arr[13][1]
+        # spirometry section end
+
+        # lung volumes section start
+        g_var['img_tlc_ref'] = arr[14][0]
+        g_var['img_tlc_pre'] = arr[14][1]
+        g_var['img_tlc_pref_pre'] = arr[14][2]
+
+        g_var['img_vc_ref'] = arr[15][0]
+        g_var['img_vc_pre'] = arr[15][1]
+        g_var['img_vc_pref_pre'] = arr[15][2]
+
+        g_var['img_ic_ref'] = arr[16][0]
+        g_var['img_ic_pre'] = arr[16][1]
+        g_var['img_ic_pref_pre'] = arr[16][2]
+
+        g_var['img_frcpl_ref'] = arr[17][0]
+        g_var['img_frcpl_pre'] = arr[17][1]
+        g_var['img_frcpl_pref_pre'] = arr[17][2]
+
+        g_var['img_erv_ref'] = arr[18][0]
+        g_var['img_erv_pre'] = arr[18][1]
+        g_var['img_erv_pref_pre'] = arr[18][2]
+
+        g_var['img_rv_ref'] = arr[19][0]
+        g_var['img_rv_pre'] = arr[19][1]
+        g_var['img_rv_pref_pre'] = arr[19][2]
+
+        g_var['img_rvdtlc_ref'] = arr[20][0]
+        g_var['img_rvdtlc_pre'] = arr[20][1]
+
+        g_var['img_vtg_pre'] = arr[21][0]
+
+        g_var['img_vt_pre'] = arr[22][0]
+        # lung volumes section end
+
+        # diffusing capacity section start
+        g_var['img_dlco_ref'] = arr[23][0]
+        g_var['img_dlco_pre'] = arr[23][1]
+        g_var['img_dlco_pref_pre'] = arr[23][2]
+
+        g_var['img_dladj_ref'] = arr[24][0]
+        g_var['img_dladj_pre'] = arr[24][1]
+        g_var['img_dladj_pref_pre'] = arr[24][2]
+
+        g_var['img_dlcodva_ref'] = arr[25][0]
+        g_var['img_dlcodva_pre'] = arr[25][1]
+        g_var['img_dlcodva_pref_pre'] = arr[25][2]
+
+        g_var['img_dldvaadj_ref'] = arr[26][0]
+        g_var['img_dldvaadj_pre'] = arr[26][1]
+        g_var['img_dldvaadj_pref_pre'] = arr[26][2]
+
+        g_var['img_va_pre'] = arr[27][0]
+
+        g_var['img_ivc_pre'] = arr[28][0]
+        # diffusing capacity section end
+
+        # resistence section start
+        g_var['img_rawtotal_pre'] = arr[29][0]
+
+        g_var['img_rawinsp_pre'] = arr[30][0]
+
+        g_var['img_rawexp_pre'] = arr[31][0]
+
+        g_var['img_raw_ref'] = arr[32][0]
+        g_var['img_raw_pre'] = arr[32][1]
+        g_var['img_raw_pref_pre'] = arr[32][2]
+
+        g_var['img_gaw_ref'] = arr[33][0]
+        g_var['img_gaw_pre'] = arr[33][1]
+        g_var['img_gaw_pref_pre'] = arr[33][2]
+
+        g_var['img_sraw_ref'] = arr[34][0]
+        g_var['img_sraw_pre'] = arr[34][1]
+        g_var['img_sraw_pref_pre'] = arr[34][2]
+
+        g_var['img_sgaw_ref'] = arr[35][0]
+        g_var['img_sgaw_pre'] = arr[35][1]
+        g_var['img_sgaw_pref_pre'] = arr[35][2]
+
+        g_var['img_rawvtg_pre'] = arr[36][0]
+
+        g_var['img_rawf_pre'] = arr[37][0]
+        # resistence section start
+
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+        type04_img_cnt += 1
+        pass
+
+    elif ocr_for_title_searching(chart_image[6:40, 245:367]) == 'CATHOLIC' and ocr_for_title_searching(chart_image[323:596, 657:914]) == '':
+        g_var['img_type'] = 'type05'
+        table = get_table(chart_image, cur_before_image_file_name, header_type05, 330, 300)
+        arr = table_to_arr(table, cur_before_image_file_name, '<')
+        
+        i = 0
+        g_var['img_fvc_pred'] = arr[i][0]
+        g_var['img_fvc_pre'] = arr[i][1]
+        g_var['img_fvc_pre_ppred'] = arr[i][2]
+
+        i += 1
+        g_var['img_fev1_pred'] = arr[i][0]
+        g_var['img_fev1_pre'] = arr[i][1]
+        g_var['img_fev1_pre_ppred'] = arr[i][2]
+
+        i += 1
+        g_var['img_fev1dfvc_pred'] = arr[i][0]
+        g_var['img_fev1dfvc_pre'] = arr[i][1]
+
+        i += 1
+        g_var['img_fef25_75_pred'] = arr[i][0]
+        g_var['img_fef25_75_pre'] = arr[i][1]
+        g_var['img_fef25_75_pre_ppred'] = arr[i][2]
+
+        i += 1
+        g_var['img_isofef25_75_pred'] = arr[i][0]
+        g_var['img_isofef25_75_pre'] = arr[i][1]
+        g_var['img_isofef25_75_pre_ppred'] = arr[i][2]
+
+        i += 1
+        g_var['img_fef75_85_pred'] = arr[i][0]
+        g_var['img_fef75_85_pre'] = arr[i][1]
+        g_var['img_fef75_85_pre_ppred'] = arr[i][2]
+
+        i += 1
+        g_var['img_pef_pred'] = arr[i][0]
+        g_var['img_pef_pre'] = arr[i][1]
+        g_var['img_pef_pre_ppred'] = arr[i][2]
+
+        i += 1
+        g_var['img_peft_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_fet100_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_fivc_pred'] = arr[i][0]
+        g_var['img_fivc_pre'] = arr[i][1]
+        g_var['img_fivc_pre_ppred'] = arr[i][2]
+
+        if len(arr) == 15:
+            i += 1
+            g_var['img_fiv1_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_fefdfif50_pred'] = arr[i][0]
+        g_var['img_fefdfif50_pre'] = arr[i][1]
+
+        i += 1
+        g_var['img_volextrap_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_fvlecode_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_mvv_pred'] = arr[i][0]
+
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+        type05_img_cnt += 1
+        pass
+
+    elif ocr_for_title_searching(chart_image[6:40, 245:367]) == 'CATHOLIC':
+        g_var['img_type'] = 'type06'
+
+        table = get_table(chart_image, cur_before_image_file_name, header_type06, 610, 310)
+        arr = table_to_arr(table, cur_before_image_file_name, '<')
+
+        i = 0
+        g_var['img_fvc_pred'] = arr[i][0]
+        g_var['img_fvc_pre'] = arr[i][1]
+        g_var['img_fvc_pre_ppred'] = arr[i][2]
+        g_var['img_fvc_post'] = arr[i][3]
+        g_var['img_fvc_post_ppred'] = arr[i][4]
+        g_var['img_fvc_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_fev1_pred'] = arr[i][0]
+        g_var['img_fev1_pre'] = arr[i][1]
+        g_var['img_fev1_pre_ppred'] = arr[i][2]
+        g_var['img_fev1_post'] = arr[i][3]
+        g_var['img_fev1_post_ppred'] = arr[i][4]
+        g_var['img_fev1_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_fev1dfvc_pred'] = arr[i][0]
+        g_var['img_fev1dfvc_pre'] = arr[i][1]
+        g_var['img_fev1dfvc_post'] = arr[i][2]
+
+        i += 1
+        g_var['img_fef25_75_pred'] = arr[i][0]
+        g_var['img_fef25_75_pre'] = arr[i][1]
+        g_var['img_fef25_75_pre_ppred'] = arr[i][2]
+        g_var['img_fef25_75_post'] = arr[i][3]
+        g_var['img_fef25_75_post_ppred'] = arr[i][4]
+        g_var['img_fef25_75_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_isofef25_75_pred'] = arr[i][0]
+        g_var['img_isofef25_75_pre'] = arr[i][1]
+        g_var['img_isofef25_75_pre_ppred'] = arr[i][2]
+        g_var['img_isofef25_75_post'] = arr[i][3]
+        g_var['img_isofef25_75_post_ppred'] = arr[i][4]
+        g_var['img_isofef25_75_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_fef75_85_pred'] = arr[i][0]
+        g_var['img_fef75_85_pre'] = arr[i][1]
+        g_var['img_fef75_85_pre_ppred'] = arr[i][2]
+        g_var['img_fef75_85_post'] = arr[i][3]
+        g_var['img_fef75_85_post_ppred'] = arr[i][4]
+        g_var['img_fef75_85_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_pef_pred'] = arr[i][0]
+        g_var['img_pef_pre'] = arr[i][1]
+        g_var['img_pef_pre_ppred'] = arr[i][2]
+        g_var['img_pef_post'] = arr[i][3]
+        g_var['img_pef_post_ppred'] = arr[i][4]
+        g_var['img_pef_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_fet100_pre'] = arr[i][0]
+        g_var['img_fet100_post'] = arr[i][1]
+        g_var['img_fet100_pchg'] = arr[i][2]
+
+        i += 1
+        g_var['img_fivc_pred'] = arr[i][0]
+        g_var['img_fivc_pre'] = arr[i][1]
+        g_var['img_fivc_pre_ppred'] = arr[i][2]
+        g_var['img_fivc_post'] = arr[i][3]
+        g_var['img_fivc_post_ppred'] = arr[i][4]
+        g_var['img_fivc_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_fev1_pred'] = arr[i][0]
+        g_var['img_fev1_pre'] = arr[i][1]
+        g_var['img_fev1_pre_ppred'] = arr[i][2]
+        g_var['img_fev1_post'] = arr[i][3]
+        g_var['img_fev1_post_ppred'] = arr[i][4]
+        g_var['img_fev1_pchg'] = arr[i][5]
+
+        if len(arr) == 15:
+            i += 1
+            g_var['img_fiv1_pre'] = arr[i][0]
+            g_var['img_fiv1_post'] = arr[i][1]
+            g_var['img_fiv1_pchg'] = arr[i][2]
+
+        i += 1
+        g_var['img_fefdfif50_pred'] = arr[i][0]
+        g_var['img_fefdfif50_pre'] = arr[i][1]
+        g_var['img_fefdfif50_post'] = arr[i][2]
+        g_var['img_fefdfif50_pchg'] = arr[i][3]
+
+        i += 1
+        g_var['img_volextrap_pre'] = arr[i][0]
+        g_var['img_volextrap_post'] = arr[i][1]
+        g_var['img_volextrap_pchg'] = arr[i][2]
+
+        i += 1
+        g_var['img_fvlecode_pre'] = arr[i][0]
+        g_var['img_fvlecode_post'] = arr[i][1]
+
+        i += 1
+        g_var['img_mvv_pred'] = arr[i][0]
+
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+        type06_img_cnt += 1
+        pass
+
+    elif ocr_for_title_searching(chart_image[66:99, 538:647]) == 'REPORT':
+        g_var['img_type'] = 'type07'
+
+        # table = get_table(chart_image, cur_before_image_file_name, header_type07_1, 400, 185)
+        # arr = table_to_arr(table, cur_before_image_file_name)
+
+        # best data chart start
+        # i = 0
+        # g_var['img_fvc_ref'] = arr[i][0]
+        # g_var['img_fvc_pre'] = arr[i][1]
+        # g_var['img_fvc_pref_pre'] = arr[i][2]
+        # g_var['img_fvc_post'] = arr[i][3]
+        # g_var['img_fvc_pref_post'] = arr[i][4]
+        # g_var['img_fvc_pchg'] = arr[i][5]
+
+        # i += 1
+        # g_var['img_fev1_ref'] = arr[i][0]
+        # g_var['img_fev1_pre'] = arr[i][1]
+        # g_var['img_fev1_pref_pre'] = arr[i][2]
+        # g_var['img_fev1_post'] = arr[i][3]
+        # g_var['img_fev1_pref_post'] = arr[i][4]
+        # g_var['img_fev1_pchg'] = arr[i][5]
+
+        # i += 1
+        # g_var['img_fev1dfvc_ref'] = arr[i][0]
+        # g_var['img_fev1dfvc_pre'] = arr[i][1]
+        # g_var['img_fev1dfvc_post'] = arr[i][2]
+
+        # i += 1
+        # g_var['img_fef25_75_ref'] = arr[i][0]
+        # g_var['img_fef25_75_pre'] = arr[i][1]
+        # g_var['img_fef25_75_pref_pre'] = arr[i][2]
+        # g_var['img_fef25_75_post'] = arr[i][3]
+        # g_var['img_fef25_75_pref_post'] = arr[i][4]
+        # g_var['img_fef25_75_pchg'] = arr[i][5]
+
+        # i += 1
+        # g_var['img_pef_ref'] = arr[i][0]
+        # g_var['img_pef_pre'] = arr[i][1]
+        # g_var['img_pef_pref_pre'] = arr[i][2]
+        # g_var['img_pef_post'] = arr[i][3]
+        # g_var['img_pef_pref_post'] = arr[i][4]
+        # g_var['img_pef_pchg'] = arr[i][5]
+
+        # i += 1
+        # g_var['img_peft_pre'] = arr[i][0]
+        # g_var['img_peft_post'] = arr[i][1]
+        # g_var['img_peft_pchg'] = arr[i][2]
+
+        # i += 1
+        # g_var['img_fet100_pre'] = arr[i][0]
+        # g_var['img_fet100_post'] = arr[i][1]
+        # g_var['img_fet100_pchg'] = arr[i][2]
+
+        # i += 1
+        # g_var['img_fivc_ref'] = arr[i][0]
+        # g_var['img_fivc_pre'] = arr[i][1]
+        # g_var['img_fivc_pref_pre'] = arr[i][2]
+        # g_var['img_fivc_post'] = arr[i][3]
+        # g_var['img_fivc_pref_post'] = arr[i][4]
+        # g_var['img_fivc_pchg'] = arr[i][5]
+
+        # i += 1
+        # if len(arr[i]) == 3:
+        #     g_var['img_volextrap_pre'] = arr[i][0]
+        #     g_var['img_volextrap_post'] = arr[i][1]
+        #     g_var['img_volextrap_pchg'] = arr[i][2]
+        # else:
+        #     g_var['img_volextrap_post'] = arr[i][0]
+
+        # i += 1
+        # g_var['img_fvlecode_pre'] = arr[i][0]
+        # g_var['img_fvlecode_post'] = arr[i][1]
+        # best data chart end
+
+        # all trials chart start
+        fs.append(pool.submit(ocr, q, 'img_fvc_tri1', chart_image[468:494, 315:357]))
+        fs.append(pool.submit(ocr, q, 'img_fvc_tri2', chart_image[468:494, 363:421]))
+        fs.append(pool.submit(ocr, q, 'img_fvc_tri3', chart_image[468:494, 445:486]))
+        fs.append(pool.submit(ocr, q, 'img_fvc_tri4', chart_image[468:494, 491:551]))
+        fs.append(pool.submit(ocr, q, 'img_fvc_tri5', chart_image[468:494, 572:615]))
+        fs.append(pool.submit(ocr, q, 'img_fvc_tri6', chart_image[468:494, 630:682]))
+        fs.append(pool.submit(ocr, q, 'img_fvc_tri7', chart_image[468:494, 696:743]))
+        fs.append(pool.submit(ocr, q, 'img_fvc_tri8', chart_image[468:494, 764:805]))
+        fs.append(pool.submit(ocr, q, 'img_fev1_tri1', chart_image[488:513, 315:357]))
+        fs.append(pool.submit(ocr, q, 'img_fev1_tri2', chart_image[488:513, 363:421]))
+        fs.append(pool.submit(ocr, q, 'img_fev1_tri3', chart_image[488:513, 445:486]))
+        fs.append(pool.submit(ocr, q, 'img_fev1_tri4', chart_image[488:513, 491:551]))
+        fs.append(pool.submit(ocr, q, 'img_fev1_tri5', chart_image[488:513, 572:615]))
+        fs.append(pool.submit(ocr, q, 'img_fev1_tri6', chart_image[488:513, 630:682]))
+        fs.append(pool.submit(ocr, q, 'img_fev1_tri7', chart_image[488:513, 696:743]))
+        fs.append(pool.submit(ocr, q, 'img_fev1_tri8', chart_image[488:513, 764:805]))
+        fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri1', chart_image[509:529, 315:357]))
+        fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri2', chart_image[509:529, 363:421]))
+        fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri3', chart_image[509:529, 445:486]))
+        fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri4', chart_image[509:529, 491:551]))
+        fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri5', chart_image[509:529, 572:615]))
+        fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri6', chart_image[509:529, 630:682]))
+        fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri7', chart_image[509:529, 696:743]))
+        fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri8', chart_image[509:529, 764:805]))
+        fs.append(pool.submit(ocr, q, 'img_fef25_75_tri1', chart_image[526:548, 315:357]))
+        fs.append(pool.submit(ocr, q, 'img_fef25_75_tri2', chart_image[526:548, 363:421]))
+        fs.append(pool.submit(ocr, q, 'img_fef25_75_tri3', chart_image[526:548, 445:486]))
+        fs.append(pool.submit(ocr, q, 'img_fef25_75_tri4', chart_image[526:548, 491:551]))
+        fs.append(pool.submit(ocr, q, 'img_fef25_75_tri5', chart_image[526:548, 572:615]))
+        fs.append(pool.submit(ocr, q, 'img_fef25_75_tri6', chart_image[526:548, 630:682]))
+        fs.append(pool.submit(ocr, q, 'img_fef25_75_tri7', chart_image[526:548, 696:743]))
+        fs.append(pool.submit(ocr, q, 'img_fef25_75_tri8', chart_image[526:548, 764:805]))
+        fs.append(pool.submit(ocr, q, 'img_pef_tri1', chart_image[546:565, 315:357]))
+        fs.append(pool.submit(ocr, q, 'img_pef_tri2', chart_image[546:565, 363:421]))
+        fs.append(pool.submit(ocr, q, 'img_pef_tri3', chart_image[546:565, 445:486]))
+        fs.append(pool.submit(ocr, q, 'img_pef_tri4', chart_image[546:565, 491:551]))
+        fs.append(pool.submit(ocr, q, 'img_pef_tri5', chart_image[546:565, 572:615]))
+        fs.append(pool.submit(ocr, q, 'img_pef_tri6', chart_image[546:565, 630:682]))
+        fs.append(pool.submit(ocr, q, 'img_pef_tri7', chart_image[546:565, 696:743]))
+        fs.append(pool.submit(ocr, q, 'img_pef_tri8', chart_image[546:565, 764:805]))
+        fs.append(pool.submit(ocr, q, 'img_peft_tri1', chart_image[562:584, 315:357]))
+        fs.append(pool.submit(ocr, q, 'img_peft_tri2', chart_image[562:584, 363:421]))
+        fs.append(pool.submit(ocr, q, 'img_peft_tri3', chart_image[562:584, 445:486]))
+        fs.append(pool.submit(ocr, q, 'img_peft_tri4', chart_image[562:584, 491:551]))
+        fs.append(pool.submit(ocr, q, 'img_peft_tri5', chart_image[562:584, 572:615]))
+        fs.append(pool.submit(ocr, q, 'img_peft_tri6', chart_image[562:584, 630:682]))
+        fs.append(pool.submit(ocr, q, 'img_peft_tri7', chart_image[562:584, 696:743]))
+        fs.append(pool.submit(ocr, q, 'img_peft_tri8', chart_image[562:584, 764:805]))
+        fs.append(pool.submit(ocr, q, 'img_fet100_tri1', chart_image[580:600, 315:357]))
+        fs.append(pool.submit(ocr, q, 'img_fet100_tri2', chart_image[580:600, 363:421]))
+        fs.append(pool.submit(ocr, q, 'img_fet100_tri3', chart_image[580:600, 445:486]))
+        fs.append(pool.submit(ocr, q, 'img_fet100_tri4', chart_image[580:600, 491:551]))
+        fs.append(pool.submit(ocr, q, 'img_fet100_tri5', chart_image[580:600, 572:615]))
+        fs.append(pool.submit(ocr, q, 'img_fet100_tri6', chart_image[580:600, 630:682]))
+        fs.append(pool.submit(ocr, q, 'img_fet100_tri7', chart_image[580:600, 696:743]))
+        fs.append(pool.submit(ocr, q, 'img_fet100_tri8', chart_image[580:600, 764:805]))
+        fs.append(pool.submit(ocr, q, 'img_fivc_tri1', chart_image[598:618, 315:357]))
+        fs.append(pool.submit(ocr, q, 'img_fivc_tri2', chart_image[598:618, 363:421]))
+        fs.append(pool.submit(ocr, q, 'img_fivc_tri3', chart_image[598:618, 445:486]))
+        fs.append(pool.submit(ocr, q, 'img_fivc_tri4', chart_image[598:618, 491:551]))
+        fs.append(pool.submit(ocr, q, 'img_fivc_tri5', chart_image[598:618, 572:615]))
+        fs.append(pool.submit(ocr, q, 'img_fivc_tri6', chart_image[598:618, 630:682]))
+        fs.append(pool.submit(ocr, q, 'img_fivc_tri7', chart_image[598:618, 696:743]))
+        fs.append(pool.submit(ocr, q, 'img_fivc_tri8', chart_image[598:618, 764:805]))
+        fs.append(pool.submit(ocr, q, 'img_volextrap_tri1', chart_image[614:636, 315:357]))
+        fs.append(pool.submit(ocr, q, 'img_volextrap_tri2', chart_image[614:636, 363:421]))
+        fs.append(pool.submit(ocr, q, 'img_volextrap_tri3', chart_image[614:636, 445:486]))
+        fs.append(pool.submit(ocr, q, 'img_volextrap_tri4', chart_image[614:636, 491:551]))
+        fs.append(pool.submit(ocr, q, 'img_volextrap_tri5', chart_image[614:636, 572:615]))
+        fs.append(pool.submit(ocr, q, 'img_volextrap_tri6', chart_image[614:636, 630:682]))
+        fs.append(pool.submit(ocr, q, 'img_volextrap_tri7', chart_image[614:636, 696:743]))
+        fs.append(pool.submit(ocr, q, 'img_volextrap_tri8', chart_image[614:636, 764:805]))
+        fs.append(pool.submit(ocr, q, 'img_fvlecode_tri1', chart_image[635:650, 315:357]))
+        fs.append(pool.submit(ocr, q, 'img_fvlecode_tri2', chart_image[635:650, 363:421]))
+        fs.append(pool.submit(ocr, q, 'img_fvlecode_tri3', chart_image[635:650, 445:486]))
+        fs.append(pool.submit(ocr, q, 'img_fvlecode_tri4', chart_image[635:650, 491:551]))
+        fs.append(pool.submit(ocr, q, 'img_fvlecode_tri5', chart_image[635:650, 572:615]))
+        fs.append(pool.submit(ocr, q, 'img_fvlecode_tri6', chart_image[635:650, 630:682]))
+        fs.append(pool.submit(ocr, q, 'img_fvlecode_tri7', chart_image[635:650, 696:743]))
+        fs.append(pool.submit(ocr, q, 'img_fvlecode_tri8', chart_image[635:650, 764:805]))
+        # all trials chart end
+
+
+
+
+
+
+
+
+
+
+
+
+
+        # fs.append(pool.submit(ocr, q, 'img_fvc_ref', chart_image[249:271, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_fvc_pre', chart_image[249:271, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fvc_post', chart_image[249:271, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fvc_tri1', chart_image[468:494, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_fvc_tri2', chart_image[468:494, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fvc_tri3', chart_image[468:494, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_fvc_tri4', chart_image[468:494, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fvc_tri5', chart_image[468:494, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_fvc_tri6', chart_image[468:494, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_fvc_tri7', chart_image[468:494, 696:743]))
+        # fs.append(pool.submit(ocr, q, 'img_fvc_tri8', chart_image[468:494, 764:805]))
+        # fs.append(pool.submit(ocr, q, 'img_fvc_pref_pre', chart_image[249:271, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_fvc_pref_post', chart_image[249:271, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_fvc_pchg', chart_image[249:271, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_ref', chart_image[270:289, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_pre', chart_image[270:289, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_post', chart_image[270:289, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_tri1', chart_image[488:513, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_tri2', chart_image[488:513, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_tri3', chart_image[488:513, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_tri4', chart_image[488:513, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_tri5', chart_image[488:513, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_tri6', chart_image[488:513, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_tri7', chart_image[488:513, 696:743]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_tri8', chart_image[488:513, 764:805]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_pref_pre', chart_image[270:289, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_pref_post', chart_image[270:289, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1_pchg', chart_image[270:289, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_ref', chart_image[289:306, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_pre', chart_image[289:306, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_post', chart_image[289:306, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri1', chart_image[509:529, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri2', chart_image[509:529, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri3', chart_image[509:529, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri4', chart_image[509:529, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri5', chart_image[509:529, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri6', chart_image[509:529, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri7', chart_image[509:529, 696:743]))
+        # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri8', chart_image[509:529, 764:805]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_ref', chart_image[301:326, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_pre', chart_image[301:326, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_post', chart_image[301:326, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri1', chart_image[526:548, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri2', chart_image[526:548, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri3', chart_image[526:548, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri4', chart_image[526:548, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri5', chart_image[526:548, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri6', chart_image[526:548, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri7', chart_image[526:548, 696:743]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri8', chart_image[526:548, 764:805]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_pref_pre', chart_image[301:326, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_pref_post', chart_image[301:326, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_fef25_75_pchg', chart_image[301:326, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_ref', chart_image[322:344, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_pre', chart_image[322:344, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_post', chart_image[322:344, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_tri1', chart_image[546:565, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_tri2', chart_image[546:565, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_tri3', chart_image[546:565, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_tri4', chart_image[546:565, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_tri5', chart_image[546:565, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_tri6', chart_image[546:565, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_tri7', chart_image[546:565, 696:743]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_tri8', chart_image[546:565, 764:805]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_pref_pre', chart_image[322:344, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_pref_post', chart_image[322:344, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_pef_pchg', chart_image[322:344, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_peft_pchg', chart_image[340:360, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_peft_pre', chart_image[340:360, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_peft_post', chart_image[340:360, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_peft_tri1', chart_image[562:584, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_peft_tri2', chart_image[562:584, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_peft_tri3', chart_image[562:584, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_peft_tri4', chart_image[562:584, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_peft_tri5', chart_image[562:584, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_peft_tri6', chart_image[562:584, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_peft_tri7', chart_image[562:584, 696:743]))
+        # fs.append(pool.submit(ocr, q, 'img_peft_tri8', chart_image[562:584, 764:805]))
+        # fs.append(pool.submit(ocr, q, 'img_fet100_pchg', chart_image[358:378, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_fet100_pre', chart_image[358:378, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fet100_post', chart_image[358:378, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fet100_tri1', chart_image[580:600, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_fet100_tri2', chart_image[580:600, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fet100_tri3', chart_image[580:600, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_fet100_tri4', chart_image[580:600, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fet100_tri5', chart_image[580:600, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_fet100_tri6', chart_image[580:600, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_fet100_tri7', chart_image[580:600, 696:743]))
+        # fs.append(pool.submit(ocr, q, 'img_fet100_tri8', chart_image[580:600, 764:805]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_ref', chart_image[376:398, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_pre', chart_image[376:398, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_post', chart_image[376:398, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_pref_pre', chart_image[376:398, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_pref_post', chart_image[376:398, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_pchg', chart_image[376:398, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_tri1', chart_image[598:618, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_tri2', chart_image[598:618, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_tri3', chart_image[598:618, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_tri4', chart_image[598:618, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_tri5', chart_image[598:618, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_tri6', chart_image[598:618, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_tri7', chart_image[598:618, 696:743]))
+        # fs.append(pool.submit(ocr, q, 'img_fivc_tri8', chart_image[598:618, 764:805]))
+        # fs.append(pool.submit(ocr, q, 'img_volextrap_pchg', chart_image[393:414, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_volextrap_pre', chart_image[393:414, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_volextrap_post', chart_image[393:414, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_volextrap_tri1', chart_image[614:636, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_volextrap_tri2', chart_image[614:636, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_volextrap_tri3', chart_image[614:636, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_volextrap_tri4', chart_image[614:636, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_volextrap_tri5', chart_image[614:636, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_volextrap_tri6', chart_image[614:636, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_volextrap_tri7', chart_image[614:636, 696:743]))
+        # fs.append(pool.submit(ocr, q, 'img_volextrap_tri8', chart_image[614:636, 764:805]))
+        # fs.append(pool.submit(ocr, q, 'img_fvlecode_pre', chart_image[412:434, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fvlecode_post', chart_image[412:434, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri1', chart_image[635:650, 315:357]))
+        # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri2', chart_image[635:650, 363:421]))
+        # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri3', chart_image[635:650, 445:486]))
+        # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri4', chart_image[635:650, 491:551]))
+        # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri5', chart_image[635:650, 572:615]))
+        # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri6', chart_image[635:650, 630:682]))
+        # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri7', chart_image[635:650, 696:743]))
+        # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri8', chart_image[635:650, 764:805]))
+        type07_img_cnt += 1
+        pass
+
+    elif ocr_for_title_searching(chart_image[266:303, 3:44]) == 'Lung':
+        g_var['img_type'] = 'type08'
+        table = get_table(chart_image, cur_before_image_file_name, header_type08, 215, 390)
+        arr = table_to_arr(table, cur_before_image_file_name)
+
+        i = 0
+        g_var['img_tlc_ref'] = arr[i][0]
+        g_var['img_tlc_pre'] = arr[i][1]
+        g_var['img_tlc_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_vc_ref'] = arr[i][0]
+        g_var['img_vc_pre'] = arr[i][1]
+        g_var['img_vc_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_ic_ref'] = arr[i][0]
+        g_var['img_ic_pre'] = arr[i][1]
+        g_var['img_ic_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_frcpl_ref'] = arr[i][0]
+        g_var['img_frcpl_pre'] = arr[i][1]
+        g_var['img_frcpl_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_erv_ref'] = arr[i][0]
+        g_var['img_erv_pre'] = arr[i][1]
+        g_var['img_erv_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_rv_ref'] = arr[i][0]
+        g_var['img_rv_pre'] = arr[i][1]
+        g_var['img_rv_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_rvdtlc_ref'] = arr[i][0]
+        g_var['img_rvdtlc_pre'] = arr[i][1]
+
+        i += 1
+        g_var['img_vtg_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_vt_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_rawinsp_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_rawexp_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_raw_ref'] = arr[i][0]
+        g_var['img_raw_pre'] = arr[i][1]
+        g_var['img_raw_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_gaw_ref'] = arr[i][0]
+        g_var['img_gaw_pre'] = arr[i][1]
+        g_var['img_gaw_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_sraw_ref'] = arr[i][0]
+        g_var['img_sraw_pre'] = arr[i][1]
+        g_var['img_sraw_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_sgaw_ref'] = arr[i][0]
+        g_var['img_sgaw_pre'] = arr[i][1]
+        g_var['img_sgaw_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_rawvtg_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_rawf_pre'] = arr[i][0]
+        
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+        type08_img_cnt += 1
+        pass
+
+    else:
+        g_var['img_type'] = 'typeUK'
+        typeUK_img_cnt += 1
+        pass
+            
+    for f in fs:
+        f.result()
+    
+    q.put(['END', True])
+    while True:
+        q_val = q.get()
+        if q_val[0] == 'END':
+            break
+        g_var[q_val[0]] = q_val[1]
+    
+    # copy image to sorted dir
+    before_image_files_counter += 1
+    # cv2.imwrite(g_var['img_type'] + "/" + g_var['img_type'] + "_" + cur_before_image_file_name, chart_image)
+
+    return [cur_before_image_file_path, g_var, arr, cur_before_image_file_name, chart_image]
+
     
 def process(before_path):
     before_image_file_paths = []
@@ -148,1038 +1167,33 @@ def process(before_path):
     else:
         before_image_file_paths = before_path
 
-    before_image_files_counter = 0
-    type01_img_cnt = 0
-    type02_img_cnt = 0
-    type03_img_cnt = 0
-    type04_img_cnt = 0
-    type05_img_cnt = 0
-    type06_img_cnt = 0
-    type07_img_cnt = 0
-    type08_img_cnt = 0
-    typeUK_img_cnt = 0
-
     ws, wb = init_worksheet()
+    pfs = []
     for cur_before_image_file_path in before_image_file_paths:
-        reset_g_var()
-        cur_before_image_file_name = os.path.basename(cur_before_image_file_path)
-        chart_image = cv2.imread(cur_before_image_file_path)
-        before_image_files_counter += 1
+        pfs.append(pool.submit(process_chart_and_get_v_gar, cur_before_image_file_path))
+
+    for f in pfs:
+        f_result = f.result()
+        img_path = f_result[0]
+        g_var = f_result[1]
+        arr = f_result[2]
+        img_name = f_result[3]
+        img = f_result[4]
+
+        for ar in arr:
+            for ns in ar:
+                print(ns)
+            print()
+        print(img_path + " -> " + g_var['img_type'])
+        print()
 
-        q = Queue()
-        fs = []
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[167:223, 239:445])) # Methacholine
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[177:217, 156:247])) # aridol
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[360:390, 38:111])) # Diffusing
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[266:295, 1:89])) # Spirometry
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[6:40, 245:367])) # CATHOLIC
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[323:596, 657:914])) # ''
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[6:40, 245:367])) # CATHOLIC
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[66:99, 538:647])) # REPORT
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[266:303, 3:44])) # Lung
-
-        title_res = []
-        for f in fs:
-            title_res.append(f.result())
-        fs = []
-        
-        #[s_y:e_y, s_x:e_x]
-        if title_res[0] == 'Methacholine':
-            print('type01')
-            g_var['img_type'] = 'type01'
-            table = get_table(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
-            arr = table_to_arr(table, cur_before_image_file_name)
-            
-            # fvc dose
-            for i in range(0, 5 + 1):
-                g_var['img_fvc_dose_lv' + str(i + 1)] = arr[0][i]
-
-            # fvc liters
-            g_var['img_fvc_ref'] = arr[1][0]
-            g_var['img_fvc_pre'] = arr[1][1]
-            for i in range(2, 7 + 1):
-                g_var['img_fvc_lv' + str(i - 1)] = arr[1][i]
-
-            # fvc % ref
-            g_var['img_fvc_pref_pre'] = arr[2][0]
-            for i in range(1, 6 + 1):
-                g_var['img_fvc_pref_lv' + str(i)] = arr[2][i]
-
-            # fvc % chg
-            for i in range(0, 5 + 1):
-                g_var['img_fvc_pchg_lv' + str(i + 1)] = arr[3][i]
-
-            # fev1 dose
-            for i in range(0, 5 + 1):
-                g_var['img_fev1_dose_lv' + str(i + 1)] = arr[4][i]
-
-            # fev1 liters
-            g_var['img_fev1_ref'] = arr[5][0]
-            g_var['img_fev1_pre'] = arr[5][1]
-            for i in range(2, 7 + 1):
-                g_var['img_fev1_lv' + str(i - 1)] = arr[5][i]
-
-            # fev1 % ref
-            g_var['img_fev1_pref_pre'] = arr[6][0]
-            for i in range(1, 6 + 1):
-                g_var['img_fev1_pref_lv' + str(i)] = arr[6][i]
-
-            # fev1 % chg
-            for i in range(0, 5 + 1):
-                g_var['img_fev1_pchg_lv' + str(i + 1)] = arr[7][i]
-
-            # fef25-75% dose
-            for i in range(0, 5 + 1):
-                g_var['img_fef25_75_lv' + str(i + 1)] = arr[8][i]
-
-            # fef25-75%
-            for i in range(0, 5 + 1):
-                g_var['img_fef25_75_dose_lv' + str(i + 1)] = arr[9][i]
-
-            # fef25-75% % ref
-            g_var['img_fef25_75_pre'] = arr[10][0]
-            for i in range(1, 6 + 1):
-                g_var['img_fef25_75_lv' + str(i)] = arr[10][i]
-
-            # fef25-75% % chg
-            for i in range(0, 5 + 1):
-                g_var['img_fef25_75_pchg_lv' + str(i + 1)] = arr[11][i]
-            
-            # pef lsec dose
-            for i in range(0, 5 + 1):
-                g_var['img_pef_dose_lv' + str(i + 1)] = arr[12][i]
-
-            # pef lsec
-            g_var['img_pef_ref'] = arr[13][0]
-            g_var['img_pef_pre'] = arr[13][1]
-            for i in range(2, 7 + 1):
-                g_var['img_pef_lv' + str(i - 1)] = arr[13][i]
-
-            # pef lsec % ref
-            g_var['img_pef_pref_pre'] = arr[14][0]
-            for i in range(1, 6 + 1):
-                g_var['img_pef_pref_lv' +  str(i)] = arr[14][i]
-
-            # pef lsec % chg
-            for i in range(0, 5 + 1):
-                g_var['img_pef_pchg_lv' + str(i + 1)] = arr[15][i]
-
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-            type01_img_cnt += 1
-            pass
-
-        elif title_res[1] == 'aridol':
-            print('type02')
-            g_var['img_type'] = 'type02'
-            table = get_table(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
-            arr = table_to_arr(table, cur_before_image_file_name)
-
-            # fvc dose
-            for i in range(0, 8 + 1):
-                g_var['img_fvc_dose_lv' + str(i + 1)] = arr[0][i]
-
-            # fvc liters
-            g_var['img_fvc_ref'] = arr[1][0]
-            g_var['img_fvc_pre'] = arr[1][1]
-            for i in range(2, 10 + 1):
-                g_var['img_fvc_lv' + str(i - 1)] = arr[1][i]
-
-            # fvc % ref
-            g_var['img_fvc_pref_pre'] = arr[2][0]
-            for i in range(1, 9 + 1):
-                g_var['img_fvc_pref_lv' + str(i)] = arr[2][i]
-
-            # fvc % chg
-            for i in range(0, 8 + 1):
-                g_var['img_fvc_pchg_lv' + str(i + 1)] = arr[3][i]
-
-            # fev1 dose
-            for i in range(0, 8 + 1):
-                g_var['img_fev1_dose_lv' + str(i + 1)] = arr[4][i]
-
-            # fev1 liters
-            g_var['img_fev1_ref'] = arr[5][0]
-            g_var['img_fev1_pre'] = arr[5][1]
-            for i in range(2, 10 + 1):
-                g_var['img_fev1_lv' + str(i - 1)] = arr[5][i]
-
-            # fev1 % ref
-            g_var['img_fev1_pref_pre'] = arr[6][0]
-            for i in range(1, 9 + 1):
-                g_var['img_fev1_pref_lv' + str(i)] = arr[6][i]
-
-            # fev1 % chg
-            for i in range(0, 8 + 1):
-                g_var['img_fev1_pchg_lv' + str(i + 1)] = arr[7][i]
-
-            # fef25-75% dose
-            for i in range(0, 8 + 1):
-                g_var['img_fef25_75_lv' + str(i + 1)] = arr[8][i]
-
-            # fef25-75%
-            for i in range(0, 10 + 1):
-                g_var['img_fef25_75_dose_lv' + str(i + 1)] = arr[9][i]
-
-            # fef25-75% % ref
-            g_var['img_fef25_75_pre'] = arr[10][0]
-            for i in range(1, 9 + 1):
-                g_var['img_fef25_75_lv' + str(i)] = arr[10][i]
-
-            # fef25-75% % chg
-            for i in range(0, 8 + 1):
-                g_var['img_fef25_75_pchg_lv' + str(i + 1)] = arr[11][i]
-            
-            # pef lsec dose
-            for i in range(0, 8 + 1):
-                g_var['img_pef_dose_lv' + str(i + 1)] = arr[12][i]
-
-            # pef lsec
-            g_var['img_pef_ref'] = arr[13][0]
-            g_var['img_pef_pre'] = arr[13][1]
-            for i in range(2, 10 + 1):
-                g_var['img_pef_lv' + str(i - 1)] = arr[13][i]
-
-            # pef lsec % ref
-            g_var['img_pef_pref_pre'] = arr[14][0]
-            for i in range(1, 9 + 1):
-                g_var['img_pef_pref_lv' +  str(i)] = arr[14][i]
-
-            # pef lsec % chg
-            for i in range(0, 8 + 1):
-                g_var['img_pef_pchg_lv' + str(i + 1)] = arr[15][i]
-
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-
-            type02_img_cnt += 1
-            pass
-    
-        elif title_res[2] == 'Diffusing':
-            print('type03')
-            g_var['img_type'] = 'type03'
-            table = get_table(chart_image, cur_before_image_file_name, header_type03, 220, 140)
-            arr = table_to_arr(table, cur_before_image_file_name)
-
-            g_var['img_dlco_ref'] = arr[0][0]
-            g_var['img_dlco_pre'] = arr[0][1]
-            g_var['img_dlco_pref_pre'] = arr[0][2]
-            g_var['img_dladj_ref'] = arr[1][0]
-            g_var['img_dladj_pre'] = arr[1][1]
-            g_var['img_dladj_pref_pre'] = arr[1][2]
-            g_var['img_dlcodva_ref'] = arr[2][0]
-            g_var['img_dlcodva_pre'] = arr[2][1]
-            g_var['img_dlcodva_pref_pre'] = arr[2][2]
-            g_var['img_dldvaadj_ref'] = arr[3][0]
-            g_var['img_dldvaadj_pre'] = arr[3][1]
-            g_var['img_dldvaadj_pref_pre'] = arr[3][2]
-            g_var['img_va_pre'] = arr[4][0]
-            g_var['img_ivc_pre'] = arr[5][0]
-            g_var['img_dlcoecode_pre'] = arr[6][0]
-
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-            type03_img_cnt += 1
-            pass
-
-        elif title_res[3] == 'Spirometry':
-            print('type04')
-            g_var['img_type'] = 'type04'
-
-            table = get_table(chart_image, cur_before_image_file_name, header_type04, 430, 900)
-            arr = table_to_arr(table, cur_before_image_file_name)
-
-            # spirometry section start
-            g_var['img_fvc_ref'] = arr[0][0]
-            g_var['img_fvc_pre'] = arr[0][1]
-            g_var['img_fvc_pref_pre'] = arr[0][2]
-            if len(arr[0]) == 6:
-                g_var['img_fvc_post'] = arr[0][3]
-                g_var['img_fvc_pref_post'] = arr[0][4]
-                g_var['img_fvc_pchg'] = arr[0][5]
-            
-            g_var['img_fev05_ref'] = arr[1][0]
-            g_var['img_fev05_pre'] = arr[1][1]
-            g_var['img_fev05_pref_pre'] = arr[1][2]
-            if len(arr[1]) == 6:
-                g_var['img_fev05_post'] = arr[1][3]
-                g_var['img_fev05_pref_post'] = arr[1][4]
-                g_var['img_fev05_pchg'] = arr[1][5]
-
-            g_var['img_fev1_ref'] = arr[2][0]
-            g_var['img_fev1_pre'] = arr[2][1]
-            g_var['img_fev1_pref_pre'] = arr[2][2]
-            if len(arr[2]) == 6:
-                g_var['img_fev1_post'] = arr[2][3]
-                g_var['img_fev1_pref_post'] = arr[2][4]
-                g_var['img_fev1_pchg'] = arr[2][5]
-
-            g_var['img_fev1dfvc_ref'] = arr[3][0]
-            g_var['img_fev1dfvc_pre'] = arr[3][1]
-            if len(arr[3]) == 3:
-                g_var['img_fev1dfvc_post'] = arr[3][2]
-
-            g_var['img_fev3dfvc_ref'] = arr[4][0]
-            g_var['img_fev3dfvc_pre'] = arr[4][1]
-            if len(arr[4]) == 3:
-                g_var['img_fev3dfvc_post'] = arr[4][2]
-
-            g_var['img_fef25_75_ref'] = arr[5][0]
-            g_var['img_fef25_75_pre'] = arr[5][1]
-            g_var['img_fef25_75_pref_pre'] = arr[5][2]
-            if len(arr[5]) == 6:
-                g_var['img_fef25_75_post'] = arr[5][3]
-                g_var['img_fef25_75_pref_post'] = arr[5][4]
-                g_var['img_fef25_75_pchg'] = arr[5][5]
-
-            g_var['img_fef75_85_ref'] = arr[6][0]
-            g_var['img_fef75_85_pre'] = arr[6][1]
-            g_var['img_fef75_85_pref_pre'] = arr[6][2]
-            if len(arr[6]) == 6:
-                g_var['img_fef75_85_post'] = arr[6][3]
-                g_var['img_fef75_85_pref_post'] = arr[6][4]
-                g_var['img_fef75_85_pchg'] = arr[6][5]
-
-            g_var['img_fef25_pre'] = arr[7][0]
-            if len(arr[7]) == 3:
-                g_var['img_fef25_post'] = arr[7][1]
-                g_var['img_fef25_pchg'] = arr[7][2]
-
-            g_var['img_fef50_ref'] = arr[8][0]
-            g_var['img_fef50_pre'] = arr[8][1]
-            g_var['img_fef50_pref_pre'] = arr[8][2]
-            if len(arr[8]) == 6:
-                g_var['img_fef50_post'] = arr[8][3]
-                g_var['img_fef50_pref_post'] = arr[8][4]
-                g_var['img_fef50_pchg'] = arr[8][5]
-
-            g_var['img_fef75_ref'] = arr[9][0]
-            g_var['img_fef75_pre'] = arr[9][1]
-            g_var['img_fef75_pref_pre'] = arr[9][2]
-            if len(arr[9]) == 6:
-                g_var['img_fef75_post'] = arr[9][3]
-                g_var['img_fef75_pref_post'] = arr[9][4]
-                g_var['img_fef75_pchg'] = arr[9][5]
-
-            g_var['img_fef200_1200_ref'] = arr[10][0]
-            g_var['img_fef200_1200_pre'] = arr[10][1]
-            g_var['img_fef200_1200_pref_pre'] = arr[10][2]
-            if len(arr[10]) == 6:
-                g_var['img_fef200_1200_post'] = arr[10][3]
-                g_var['img_fef200_1200_pref_post'] = arr[10][4]
-                g_var['img_fef200_1200_pchg'] = arr[10][5]
-
-            g_var['img_pef_ref'] = arr[11][0]
-            g_var['img_pef_pre'] = arr[11][1]
-            g_var['img_pef_pref_pre'] = arr[11][2]
-            if len(arr[11]) == 6:
-                g_var['img_pef_post'] = arr[11][3]
-                g_var['img_pef_pref_post'] = arr[11][4]
-                g_var['img_pef_pchg'] = arr[11][5]
-
-            g_var['img_fivc_ref'] = arr[12][0]
-            g_var['img_fivc_pre'] = arr[12][1]
-            g_var['img_fivc_pref_pre'] = arr[12][2]
-            if len(arr[12]) == 6:
-                g_var['img_fivc_post'] = arr[12][3]
-                g_var['img_fivc_pref_post'] = arr[12][4]
-                g_var['img_fivc_pchg'] = arr[12][5]
-
-            g_var['img_fvlecode_pre'] = arr[13][0]
-            if len(arr[13]) == 2:
-                g_var['img_fvlecode_post'] = arr[13][1]
-            # spirometry section end
-
-            # lung volumes section start
-            g_var['img_tlc_ref'] = arr[14][0]
-            g_var['img_tlc_pre'] = arr[14][1]
-            g_var['img_tlc_pref_pre'] = arr[14][2]
-
-            g_var['img_vc_ref'] = arr[15][0]
-            g_var['img_vc_pre'] = arr[15][1]
-            g_var['img_vc_pref_pre'] = arr[15][2]
-
-            g_var['img_ic_ref'] = arr[16][0]
-            g_var['img_ic_pre'] = arr[16][1]
-            g_var['img_ic_pref_pre'] = arr[16][2]
-
-            g_var['img_frcpl_ref'] = arr[17][0]
-            g_var['img_frcpl_pre'] = arr[17][1]
-            g_var['img_frcpl_pref_pre'] = arr[17][2]
-
-            g_var['img_erv_ref'] = arr[18][0]
-            g_var['img_erv_pre'] = arr[18][1]
-            g_var['img_erv_pref_pre'] = arr[18][2]
-
-            g_var['img_rv_ref'] = arr[19][0]
-            g_var['img_rv_pre'] = arr[19][1]
-            g_var['img_rv_pref_pre'] = arr[19][2]
-
-            g_var['img_rvdtlc_ref'] = arr[20][0]
-            g_var['img_rvdtlc_pre'] = arr[20][1]
-
-            g_var['img_vtg_pre'] = arr[21][0]
-
-            g_var['img_vt_pre'] = arr[22][0]
-            # lung volumes section end
-
-            # diffusing capacity section start
-            g_var['img_dlco_ref'] = arr[23][0]
-            g_var['img_dlco_pre'] = arr[23][1]
-            g_var['img_dlco_pref_pre'] = arr[23][2]
-
-            g_var['img_dladj_ref'] = arr[24][0]
-            g_var['img_dladj_pre'] = arr[24][1]
-            g_var['img_dladj_pref_pre'] = arr[24][2]
-
-            g_var['img_dlcodva_ref'] = arr[25][0]
-            g_var['img_dlcodva_pre'] = arr[25][1]
-            g_var['img_dlcodva_pref_pre'] = arr[25][2]
-
-            g_var['img_dldvaadj_ref'] = arr[26][0]
-            g_var['img_dldvaadj_pre'] = arr[26][1]
-            g_var['img_dldvaadj_pref_pre'] = arr[26][2]
-
-            g_var['img_va_pre'] = arr[27][0]
-
-            g_var['img_ivc_pre'] = arr[28][0]
-            # diffusing capacity section end
-
-            # resistence section start
-            g_var['img_rawtotal_pre'] = arr[29][0]
-
-            g_var['img_rawinsp_pre'] = arr[30][0]
-
-            g_var['img_rawexp_pre'] = arr[31][0]
-
-            g_var['img_raw_ref'] = arr[32][0]
-            g_var['img_raw_pre'] = arr[32][1]
-            g_var['img_raw_pref_pre'] = arr[32][2]
-
-            g_var['img_gaw_ref'] = arr[33][0]
-            g_var['img_gaw_pre'] = arr[33][1]
-            g_var['img_gaw_pref_pre'] = arr[33][2]
-
-            g_var['img_sraw_ref'] = arr[34][0]
-            g_var['img_sraw_pre'] = arr[34][1]
-            g_var['img_sraw_pref_pre'] = arr[34][2]
-
-            g_var['img_sgaw_ref'] = arr[35][0]
-            g_var['img_sgaw_pre'] = arr[35][1]
-            g_var['img_sgaw_pref_pre'] = arr[35][2]
-
-            g_var['img_rawvtg_pre'] = arr[36][0]
-
-            g_var['img_rawf_pre'] = arr[37][0]
-            # resistence section start
-
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-            type04_img_cnt += 1
-            pass
-
-        elif title_res[4] == 'CATHOLIC' and title_res[5] == '':
-            print('type05')
-            g_var['img_type'] = 'type05'
-            table = get_table(chart_image, cur_before_image_file_name, header_type05, 330, 300)
-            arr = table_to_arr(table, cur_before_image_file_name, '<')
-            
-            i = 0
-            g_var['img_fvc_pred'] = arr[i][0]
-            g_var['img_fvc_pre'] = arr[i][1]
-            g_var['img_fvc_pre_ppred'] = arr[i][2]
-
-            i += 1
-            g_var['img_fev1_pred'] = arr[i][0]
-            g_var['img_fev1_pre'] = arr[i][1]
-            g_var['img_fev1_pre_ppred'] = arr[i][2]
-
-            i += 1
-            g_var['img_fev1dfvc_pred'] = arr[i][0]
-            g_var['img_fev1dfvc_pre'] = arr[i][1]
-
-            i += 1
-            g_var['img_fef25_75_pred'] = arr[i][0]
-            g_var['img_fef25_75_pre'] = arr[i][1]
-            g_var['img_fef25_75_pre_ppred'] = arr[i][2]
-
-            i += 1
-            g_var['img_isofef25_75_pred'] = arr[i][0]
-            g_var['img_isofef25_75_pre'] = arr[i][1]
-            g_var['img_isofef25_75_pre_ppred'] = arr[i][2]
-
-            i += 1
-            g_var['img_fef75_85_pred'] = arr[i][0]
-            g_var['img_fef75_85_pre'] = arr[i][1]
-            g_var['img_fef75_85_pre_ppred'] = arr[i][2]
-
-            i += 1
-            g_var['img_pef_pred'] = arr[i][0]
-            g_var['img_pef_pre'] = arr[i][1]
-            g_var['img_pef_pre_ppred'] = arr[i][2]
-
-            i += 1
-            g_var['img_peft_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_fet100_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_fivc_pred'] = arr[i][0]
-            g_var['img_fivc_pre'] = arr[i][1]
-            g_var['img_fivc_pre_ppred'] = arr[i][2]
-
-            if len(arr) == 15:
-                i += 1
-                g_var['img_fiv1_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_fefdfif50_pred'] = arr[i][0]
-            g_var['img_fefdfif50_pre'] = arr[i][1]
-
-            i += 1
-            g_var['img_volextrap_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_fvlecode_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_mvv_pred'] = arr[i][0]
-
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-            type05_img_cnt += 1
-            pass
-
-        elif title_res[6] == 'CATHOLIC':
-            print('type06')
-            g_var['img_type'] = 'type06'
-
-            table = get_table(chart_image, cur_before_image_file_name, header_type06, 610, 310)
-            arr = table_to_arr(table, cur_before_image_file_name, '<')
-
-            i = 0
-            g_var['img_fvc_pred'] = arr[i][0]
-            g_var['img_fvc_pre'] = arr[i][1]
-            g_var['img_fvc_pre_ppred'] = arr[i][2]
-            g_var['img_fvc_post'] = arr[i][3]
-            g_var['img_fvc_post_ppred'] = arr[i][4]
-            g_var['img_fvc_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_fev1_pred'] = arr[i][0]
-            g_var['img_fev1_pre'] = arr[i][1]
-            g_var['img_fev1_pre_ppred'] = arr[i][2]
-            g_var['img_fev1_post'] = arr[i][3]
-            g_var['img_fev1_post_ppred'] = arr[i][4]
-            g_var['img_fev1_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_fev1dfvc_pred'] = arr[i][0]
-            g_var['img_fev1dfvc_pre'] = arr[i][1]
-            g_var['img_fev1dfvc_post'] = arr[i][2]
-
-            i += 1
-            g_var['img_fef25_75_pred'] = arr[i][0]
-            g_var['img_fef25_75_pre'] = arr[i][1]
-            g_var['img_fef25_75_pre_ppred'] = arr[i][2]
-            g_var['img_fef25_75_post'] = arr[i][3]
-            g_var['img_fef25_75_post_ppred'] = arr[i][4]
-            g_var['img_fef25_75_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_isofef25_75_pred'] = arr[i][0]
-            g_var['img_isofef25_75_pre'] = arr[i][1]
-            g_var['img_isofef25_75_pre_ppred'] = arr[i][2]
-            g_var['img_isofef25_75_post'] = arr[i][3]
-            g_var['img_isofef25_75_post_ppred'] = arr[i][4]
-            g_var['img_isofef25_75_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_fef75_85_pred'] = arr[i][0]
-            g_var['img_fef75_85_pre'] = arr[i][1]
-            g_var['img_fef75_85_pre_ppred'] = arr[i][2]
-            g_var['img_fef75_85_post'] = arr[i][3]
-            g_var['img_fef75_85_post_ppred'] = arr[i][4]
-            g_var['img_fef75_85_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_pef_pred'] = arr[i][0]
-            g_var['img_pef_pre'] = arr[i][1]
-            g_var['img_pef_pre_ppred'] = arr[i][2]
-            g_var['img_pef_post'] = arr[i][3]
-            g_var['img_pef_post_ppred'] = arr[i][4]
-            g_var['img_pef_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_fet100_pre'] = arr[i][0]
-            g_var['img_fet100_post'] = arr[i][1]
-            g_var['img_fet100_pchg'] = arr[i][2]
-
-            i += 1
-            g_var['img_fivc_pred'] = arr[i][0]
-            g_var['img_fivc_pre'] = arr[i][1]
-            g_var['img_fivc_pre_ppred'] = arr[i][2]
-            g_var['img_fivc_post'] = arr[i][3]
-            g_var['img_fivc_post_ppred'] = arr[i][4]
-            g_var['img_fivc_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_fev1_pred'] = arr[i][0]
-            g_var['img_fev1_pre'] = arr[i][1]
-            g_var['img_fev1_pre_ppred'] = arr[i][2]
-            g_var['img_fev1_post'] = arr[i][3]
-            g_var['img_fev1_post_ppred'] = arr[i][4]
-            g_var['img_fev1_pchg'] = arr[i][5]
-
-            if len(arr) == 15:
-                i += 1
-                g_var['img_fiv1_pre'] = arr[i][0]
-                g_var['img_fiv1_post'] = arr[i][1]
-                g_var['img_fiv1_pchg'] = arr[i][2]
-
-            i += 1
-            g_var['img_fefdfif50_pred'] = arr[i][0]
-            g_var['img_fefdfif50_pre'] = arr[i][1]
-            g_var['img_fefdfif50_post'] = arr[i][2]
-            g_var['img_fefdfif50_pchg'] = arr[i][3]
-
-            i += 1
-            g_var['img_volextrap_pre'] = arr[i][0]
-            g_var['img_volextrap_post'] = arr[i][1]
-            g_var['img_volextrap_pchg'] = arr[i][2]
-
-            i += 1
-            g_var['img_fvlecode_pre'] = arr[i][0]
-            g_var['img_fvlecode_post'] = arr[i][1]
-
-            i += 1
-            g_var['img_mvv_pred'] = arr[i][0]
-
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-            type06_img_cnt += 1
-            pass
-
-        elif title_res[7] == 'REPORT':
-            print('type07')
-            g_var['img_type'] = 'type07'
-
-            # table = get_table(chart_image, cur_before_image_file_name, header_type07_1, 400, 185)
-            # arr = table_to_arr(table, cur_before_image_file_name)
-
-            # best data chart start
-            # i = 0
-            # g_var['img_fvc_ref'] = arr[i][0]
-            # g_var['img_fvc_pre'] = arr[i][1]
-            # g_var['img_fvc_pref_pre'] = arr[i][2]
-            # g_var['img_fvc_post'] = arr[i][3]
-            # g_var['img_fvc_pref_post'] = arr[i][4]
-            # g_var['img_fvc_pchg'] = arr[i][5]
-
-            # i += 1
-            # g_var['img_fev1_ref'] = arr[i][0]
-            # g_var['img_fev1_pre'] = arr[i][1]
-            # g_var['img_fev1_pref_pre'] = arr[i][2]
-            # g_var['img_fev1_post'] = arr[i][3]
-            # g_var['img_fev1_pref_post'] = arr[i][4]
-            # g_var['img_fev1_pchg'] = arr[i][5]
-
-            # i += 1
-            # g_var['img_fev1dfvc_ref'] = arr[i][0]
-            # g_var['img_fev1dfvc_pre'] = arr[i][1]
-            # g_var['img_fev1dfvc_post'] = arr[i][2]
-
-            # i += 1
-            # g_var['img_fef25_75_ref'] = arr[i][0]
-            # g_var['img_fef25_75_pre'] = arr[i][1]
-            # g_var['img_fef25_75_pref_pre'] = arr[i][2]
-            # g_var['img_fef25_75_post'] = arr[i][3]
-            # g_var['img_fef25_75_pref_post'] = arr[i][4]
-            # g_var['img_fef25_75_pchg'] = arr[i][5]
-
-            # i += 1
-            # g_var['img_pef_ref'] = arr[i][0]
-            # g_var['img_pef_pre'] = arr[i][1]
-            # g_var['img_pef_pref_pre'] = arr[i][2]
-            # g_var['img_pef_post'] = arr[i][3]
-            # g_var['img_pef_pref_post'] = arr[i][4]
-            # g_var['img_pef_pchg'] = arr[i][5]
-
-            # i += 1
-            # g_var['img_peft_pre'] = arr[i][0]
-            # g_var['img_peft_post'] = arr[i][1]
-            # g_var['img_peft_pchg'] = arr[i][2]
-
-            # i += 1
-            # g_var['img_fet100_pre'] = arr[i][0]
-            # g_var['img_fet100_post'] = arr[i][1]
-            # g_var['img_fet100_pchg'] = arr[i][2]
-
-            # i += 1
-            # g_var['img_fivc_ref'] = arr[i][0]
-            # g_var['img_fivc_pre'] = arr[i][1]
-            # g_var['img_fivc_pref_pre'] = arr[i][2]
-            # g_var['img_fivc_post'] = arr[i][3]
-            # g_var['img_fivc_pref_post'] = arr[i][4]
-            # g_var['img_fivc_pchg'] = arr[i][5]
-
-            # i += 1
-            # if len(arr[i]) == 3:
-            #     g_var['img_volextrap_pre'] = arr[i][0]
-            #     g_var['img_volextrap_post'] = arr[i][1]
-            #     g_var['img_volextrap_pchg'] = arr[i][2]
-            # else:
-            #     g_var['img_volextrap_post'] = arr[i][0]
-
-            # i += 1
-            # g_var['img_fvlecode_pre'] = arr[i][0]
-            # g_var['img_fvlecode_post'] = arr[i][1]
-            # best data chart end
-
-            # all trials chart start
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri1', chart_image[468:494, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri2', chart_image[468:494, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri3', chart_image[468:494, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri4', chart_image[468:494, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri5', chart_image[468:494, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri6', chart_image[468:494, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri7', chart_image[468:494, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fvc_tri8', chart_image[468:494, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri1', chart_image[488:513, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri2', chart_image[488:513, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri3', chart_image[488:513, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri4', chart_image[488:513, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri5', chart_image[488:513, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri6', chart_image[488:513, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri7', chart_image[488:513, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fev1_tri8', chart_image[488:513, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri1', chart_image[509:529, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri2', chart_image[509:529, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri3', chart_image[509:529, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri4', chart_image[509:529, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri5', chart_image[509:529, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri6', chart_image[509:529, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri7', chart_image[509:529, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri8', chart_image[509:529, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri1', chart_image[526:548, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri2', chart_image[526:548, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri3', chart_image[526:548, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri4', chart_image[526:548, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri5', chart_image[526:548, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri6', chart_image[526:548, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri7', chart_image[526:548, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fef25_75_tri8', chart_image[526:548, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri1', chart_image[546:565, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri2', chart_image[546:565, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri3', chart_image[546:565, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri4', chart_image[546:565, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri5', chart_image[546:565, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri6', chart_image[546:565, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri7', chart_image[546:565, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_pef_tri8', chart_image[546:565, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri1', chart_image[562:584, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri2', chart_image[562:584, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri3', chart_image[562:584, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri4', chart_image[562:584, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri5', chart_image[562:584, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri6', chart_image[562:584, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri7', chart_image[562:584, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_peft_tri8', chart_image[562:584, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri1', chart_image[580:600, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri2', chart_image[580:600, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri3', chart_image[580:600, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri4', chart_image[580:600, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri5', chart_image[580:600, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri6', chart_image[580:600, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri7', chart_image[580:600, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fet100_tri8', chart_image[580:600, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri1', chart_image[598:618, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri2', chart_image[598:618, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri3', chart_image[598:618, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri4', chart_image[598:618, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri5', chart_image[598:618, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri6', chart_image[598:618, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri7', chart_image[598:618, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fivc_tri8', chart_image[598:618, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri1', chart_image[614:636, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri2', chart_image[614:636, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri3', chart_image[614:636, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri4', chart_image[614:636, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri5', chart_image[614:636, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri6', chart_image[614:636, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri7', chart_image[614:636, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_volextrap_tri8', chart_image[614:636, 764:805]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri1', chart_image[635:650, 315:357]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri2', chart_image[635:650, 363:421]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri3', chart_image[635:650, 445:486]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri4', chart_image[635:650, 491:551]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri5', chart_image[635:650, 572:615]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri6', chart_image[635:650, 630:682]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri7', chart_image[635:650, 696:743]))
-            fs.append(pool.submit(ocr, q, 'img_fvlecode_tri8', chart_image[635:650, 764:805]))
-            # all trials chart end
-
-
-
-
-
-
-
-
-
-
-
-
-
-            # fs.append(pool.submit(ocr, q, 'img_fvc_ref', chart_image[249:271, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_fvc_pre', chart_image[249:271, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fvc_post', chart_image[249:271, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fvc_tri1', chart_image[468:494, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_fvc_tri2', chart_image[468:494, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fvc_tri3', chart_image[468:494, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_fvc_tri4', chart_image[468:494, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fvc_tri5', chart_image[468:494, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_fvc_tri6', chart_image[468:494, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_fvc_tri7', chart_image[468:494, 696:743]))
-            # fs.append(pool.submit(ocr, q, 'img_fvc_tri8', chart_image[468:494, 764:805]))
-            # fs.append(pool.submit(ocr, q, 'img_fvc_pref_pre', chart_image[249:271, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_fvc_pref_post', chart_image[249:271, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_fvc_pchg', chart_image[249:271, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_ref', chart_image[270:289, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_pre', chart_image[270:289, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_post', chart_image[270:289, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_tri1', chart_image[488:513, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_tri2', chart_image[488:513, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_tri3', chart_image[488:513, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_tri4', chart_image[488:513, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_tri5', chart_image[488:513, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_tri6', chart_image[488:513, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_tri7', chart_image[488:513, 696:743]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_tri8', chart_image[488:513, 764:805]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_pref_pre', chart_image[270:289, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_pref_post', chart_image[270:289, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1_pchg', chart_image[270:289, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_ref', chart_image[289:306, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_pre', chart_image[289:306, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_post', chart_image[289:306, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri1', chart_image[509:529, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri2', chart_image[509:529, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri3', chart_image[509:529, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri4', chart_image[509:529, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri5', chart_image[509:529, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri6', chart_image[509:529, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri7', chart_image[509:529, 696:743]))
-            # fs.append(pool.submit(ocr, q, 'img_fev1dfvc_tri8', chart_image[509:529, 764:805]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_ref', chart_image[301:326, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_pre', chart_image[301:326, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_post', chart_image[301:326, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri1', chart_image[526:548, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri2', chart_image[526:548, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri3', chart_image[526:548, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri4', chart_image[526:548, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri5', chart_image[526:548, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri6', chart_image[526:548, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri7', chart_image[526:548, 696:743]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_tri8', chart_image[526:548, 764:805]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_pref_pre', chart_image[301:326, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_pref_post', chart_image[301:326, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_fef25_75_pchg', chart_image[301:326, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_ref', chart_image[322:344, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_pre', chart_image[322:344, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_post', chart_image[322:344, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_tri1', chart_image[546:565, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_tri2', chart_image[546:565, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_tri3', chart_image[546:565, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_tri4', chart_image[546:565, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_tri5', chart_image[546:565, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_tri6', chart_image[546:565, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_tri7', chart_image[546:565, 696:743]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_tri8', chart_image[546:565, 764:805]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_pref_pre', chart_image[322:344, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_pref_post', chart_image[322:344, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_pef_pchg', chart_image[322:344, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_peft_pchg', chart_image[340:360, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_peft_pre', chart_image[340:360, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_peft_post', chart_image[340:360, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_peft_tri1', chart_image[562:584, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_peft_tri2', chart_image[562:584, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_peft_tri3', chart_image[562:584, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_peft_tri4', chart_image[562:584, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_peft_tri5', chart_image[562:584, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_peft_tri6', chart_image[562:584, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_peft_tri7', chart_image[562:584, 696:743]))
-            # fs.append(pool.submit(ocr, q, 'img_peft_tri8', chart_image[562:584, 764:805]))
-            # fs.append(pool.submit(ocr, q, 'img_fet100_pchg', chart_image[358:378, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_fet100_pre', chart_image[358:378, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fet100_post', chart_image[358:378, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fet100_tri1', chart_image[580:600, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_fet100_tri2', chart_image[580:600, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fet100_tri3', chart_image[580:600, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_fet100_tri4', chart_image[580:600, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fet100_tri5', chart_image[580:600, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_fet100_tri6', chart_image[580:600, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_fet100_tri7', chart_image[580:600, 696:743]))
-            # fs.append(pool.submit(ocr, q, 'img_fet100_tri8', chart_image[580:600, 764:805]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_ref', chart_image[376:398, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_pre', chart_image[376:398, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_post', chart_image[376:398, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_pref_pre', chart_image[376:398, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_pref_post', chart_image[376:398, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_pchg', chart_image[376:398, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_tri1', chart_image[598:618, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_tri2', chart_image[598:618, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_tri3', chart_image[598:618, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_tri4', chart_image[598:618, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_tri5', chart_image[598:618, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_tri6', chart_image[598:618, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_tri7', chart_image[598:618, 696:743]))
-            # fs.append(pool.submit(ocr, q, 'img_fivc_tri8', chart_image[598:618, 764:805]))
-            # fs.append(pool.submit(ocr, q, 'img_volextrap_pchg', chart_image[393:414, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_volextrap_pre', chart_image[393:414, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_volextrap_post', chart_image[393:414, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri1', chart_image[614:636, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri2', chart_image[614:636, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri3', chart_image[614:636, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri4', chart_image[614:636, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri5', chart_image[614:636, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri6', chart_image[614:636, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri7', chart_image[614:636, 696:743]))
-            # fs.append(pool.submit(ocr, q, 'img_volextrap_tri8', chart_image[614:636, 764:805]))
-            # fs.append(pool.submit(ocr, q, 'img_fvlecode_pre', chart_image[412:434, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fvlecode_post', chart_image[412:434, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri1', chart_image[635:650, 315:357]))
-            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri2', chart_image[635:650, 363:421]))
-            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri3', chart_image[635:650, 445:486]))
-            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri4', chart_image[635:650, 491:551]))
-            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri5', chart_image[635:650, 572:615]))
-            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri6', chart_image[635:650, 630:682]))
-            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri7', chart_image[635:650, 696:743]))
-            # fs.append(pool.submit(ocr, q, 'img_fvlecode_tri8', chart_image[635:650, 764:805]))
-            type07_img_cnt += 1
-            pass
-
-        elif title_res[8] == 'Lung':
-            print('type08')
-            g_var['img_type'] = 'type08'
-            table = get_table(chart_image, cur_before_image_file_name, header_type08, 215, 390)
-            arr = table_to_arr(table, cur_before_image_file_name)
-
-            i = 0
-            g_var['img_tlc_ref'] = arr[i][0]
-            g_var['img_tlc_pre'] = arr[i][1]
-            g_var['img_tlc_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_vc_ref'] = arr[i][0]
-            g_var['img_vc_pre'] = arr[i][1]
-            g_var['img_vc_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_ic_ref'] = arr[i][0]
-            g_var['img_ic_pre'] = arr[i][1]
-            g_var['img_ic_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_frcpl_ref'] = arr[i][0]
-            g_var['img_frcpl_pre'] = arr[i][1]
-            g_var['img_frcpl_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_erv_ref'] = arr[i][0]
-            g_var['img_erv_pre'] = arr[i][1]
-            g_var['img_erv_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_rv_ref'] = arr[i][0]
-            g_var['img_rv_pre'] = arr[i][1]
-            g_var['img_rv_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_rvdtlc_ref'] = arr[i][0]
-            g_var['img_rvdtlc_pre'] = arr[i][1]
-
-            i += 1
-            g_var['img_vtg_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_vt_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_rawinsp_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_rawexp_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_raw_ref'] = arr[i][0]
-            g_var['img_raw_pre'] = arr[i][1]
-            g_var['img_raw_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_gaw_ref'] = arr[i][0]
-            g_var['img_gaw_pre'] = arr[i][1]
-            g_var['img_gaw_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_sraw_ref'] = arr[i][0]
-            g_var['img_sraw_pre'] = arr[i][1]
-            g_var['img_sraw_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_sgaw_ref'] = arr[i][0]
-            g_var['img_sgaw_pre'] = arr[i][1]
-            g_var['img_sgaw_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_rawvtg_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_rawf_pre'] = arr[i][0]
-            
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-            type08_img_cnt += 1
-            pass
-
-        else:
-            g_var['img_type'] = 'typeUK'
-            typeUK_img_cnt += 1
-            pass
-            
-        for f in fs:
-            print(f.result())
-        
-        q.put(['END', True])
-        while True:
-            q_val = q.get()
-            if q_val[0] == 'END':
-                break
-            g_var[q_val[0]] = q_val[1]
-        
         # create new directory
         if os.path.exists (g_var['img_type']) == 0:
             os.mkdir(g_var['img_type'])
 
+        cv2.imwrite(g_var['img_type'] + "/" + g_var['img_type'] + "_" + img_name, img)
         # add data into OOMII_DB
-        write_g_var_to_excel(ws, wb)
-        
-        # copy image to sorted dir
-        cv2.imwrite(g_var['img_type'] + "/" + g_var['img_type'] + "_" + cur_before_image_file_name, chart_image)
+        append_g_var_to_excel(ws, wb, g_var)
 
     print()
     print('Total: ' + str(before_image_files_counter))
@@ -1615,7 +1629,8 @@ def init_worksheet():
     return ws, wb
 
 
-def reset_g_var() :
+def new_g_var() :
+    g_var = {}
     g_var['img_type'] = ""
     g_var['img_pid'] = ""
     g_var['img_date'] = ""
@@ -2024,10 +2039,10 @@ def reset_g_var() :
     g_var['img_sgaw_pref_pre'] = ""
     g_var['img_rawvtg_pre'] = ""
     g_var['img_rawf_pre'] = ""
-    return
+    return g_var
 
 
-def write_g_var_to_excel(ws, wb):
+def append_g_var_to_excel(ws, wb, g_var):
     ws_cnt = str(ws.max_row + 1)
     print ("ws_cnt: " + ws_cnt)
     ws ["A" + ws_cnt] = g_var['img_type']
