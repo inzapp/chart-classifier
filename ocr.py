@@ -66,8 +66,6 @@ def get_table(image, file_name, header, table_w, table_h):
     table_y = loc[1] + h
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
     table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    cv2.imshow('table', table)
-    cv2.waitKey(0)
     return table
 
 
