@@ -6,8 +6,11 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,25 +20,36 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/")
 public class ChartController {
+	private final String[] OPTIONS = { "grayscale", "threshold", "blur", "invert" };
+
 	@GetMapping("ocr")
-	public Map<String, Object> ocr(@RequestParam("path") String path) throws Exception {
-//		File progressDir = new File("progress");
-//		if (progressDir.exists() && progressDir.isDirectory()) {
-//			for (File f : progressDir.listFiles()) {
-//				f.delete();
-//			}
-//		}
-//		File resultDir = new File("result");
-//		if (resultDir.exists() && resultDir.isDirectory()) {
-//			for (File f : resultDir.listFiles()) {
-//				f.delete();
-//			}
-//		}
-		Process p = Runtime.getRuntime().exec("python ocr.py " + path);
+	public Map<String, Object> ocr(@RequestParam("path") String path, HttpServletRequest request) throws Exception {
+		String option = request.getParameter("option") != null ? request.getParameter("option") : "";
+		String[] receivedOptions = option.equals("") ? new String[] {} : option.split(",");
+		int c = 0;
+		for (String receivedOption : receivedOptions) {
+			for (String curOption : OPTIONS) {
+				if (receivedOption.equals(curOption)) {
+					++c;
+					continue;
+				}
+			}
+		}
+		Map<String, Object> map = new HashMap<>();
+		if (c != receivedOptions.length) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("failure: invalid option. you can only use ");
+			for (String curOption : OPTIONS) {
+				sb.append(curOption).append(" ");
+			}
+			map.put("result", sb.toString());
+			return map;
+		}
+
+		Process p = Runtime.getRuntime().exec(String.format("python ocr.py %s option=%s", path, option));
 		p.waitFor();
 		p.destroy();
 
-		Map<String, Object> map = new HashMap<>();
 		String result = this.getFileContent("result.txt");
 		if (result.startsWith("0")) {
 			map.put("result", "failure");
@@ -44,7 +58,7 @@ public class ChartController {
 			String[] paths = path.split("\\s+");
 			for (String s : paths) {
 				Map<String, Object> m = new HashMap<>();
-				m.put("progress", this.getProgressFilePathList(s));
+				m.put("progress", this.getProgressFilePathList(s, receivedOptions));
 				m.put("result", this.getOcrResult(s));
 				map.put(s, m);
 			}
@@ -52,14 +66,14 @@ public class ChartController {
 		return map;
 	}
 
-	private List<String> getProgressFilePathList(String path) throws Exception {
-		String[] sp = path.split("/");
+	private List<String> getProgressFilePathList(String path, String[] receivedOptions) throws Exception {
+		String[] sp = path.split("\\\\");
 		String fileName = sp[sp.length - 1];
 		String rawFileName = fileName.split("\\.")[0];
-		List<File> progressFiles = new ArrayList<>();
-		progressFiles.add(new File("progress/" + rawFileName + "_grayscale.jpg"));
-		progressFiles.add(new File("progress/" + rawFileName + "_threshold.jpg"));
-		progressFiles.add(new File("progress/" + rawFileName + "_blur.jpg"));
+		List<File> progressFiles = new LinkedList<>();
+		for (int i = 0; i < receivedOptions.length; ++i) {
+			progressFiles.add(new File(String.format("progress\\%s_%s_%s.jpg", rawFileName, String.valueOf(i), receivedOptions[i])));
+		}
 		List<String> progressFilePaths = new ArrayList<>();
 		for (File f : progressFiles) {
 			if (f.exists() && f.isFile()) {
@@ -70,14 +84,15 @@ public class ChartController {
 	}
 
 	private String getOcrResult(String path) throws Exception {
-		String[] sp = path.split("/");
+		String[] sp = path.split("\\\\");
 		String fileName = sp[sp.length - 1];
 		String rawFileName = fileName.split("\\.")[0];
-		File ocrResultFile = new File("result/" + rawFileName + ".txt");
+		String ocrFileName = String.format("result\\%s.txt", rawFileName);
+		File ocrResultFile = new File(ocrFileName);
 		if (ocrResultFile.exists() && ocrResultFile.isFile()) {
 			return this.getFileContent(ocrResultFile.getAbsolutePath());
 		} else {
-			return "error to get file content";
+			return "error to get file content. file not found - " + ocrFileName;
 		}
 	}
 

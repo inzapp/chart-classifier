@@ -17,7 +17,7 @@ pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
 # pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR-4.0/tesseract.exe'
 pool = ThreadPoolExecutor(8)
 pool2 = ThreadPoolExecutor(3)
-# g_var = {}
+options = []
 
 print('header loading start')
 header_type01_type02 = cv2.imread('headers/type01_type02.jpg', cv2.IMREAD_COLOR)
@@ -29,6 +29,7 @@ header_type07_1 = cv2.imread('headers/type07_1.jpg', cv2.IMREAD_COLOR)
 header_type07_2 = cv2.imread('headers/type07_2.jpg', cv2.IMREAD_COLOR)
 header_type08 = cv2.imread('headers/type08.jpg', cv2.IMREAD_COLOR)
 print('header loading end')
+print('\nplease wait for initializing...')
 
 before_image_files_counter = 0
 type01_img_cnt = 0
@@ -77,6 +78,28 @@ def get_table(image, file_name, header, table_w, table_h):
     table_x = loc[0]
     table_y = loc[1] + h
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
+
+
+    # pre-process image if options exist
+    if os.path.exists ('progress') == 0:
+        os.mkdir('progress')
+    sp = file_name.split('.')
+    sp[0] = 'progress/' + sp[0]
+    i = 0
+    for option in options:
+        if option == 'grayscale':
+            table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
+            cv2.imwrite('%s_%s_grayscale.%s' % (sp[0], i, sp[1]), table)
+        elif option == 'threshold':
+            tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
+            cv2.imwrite('%s_%s_threshold.%s' % (sp[0], i, sp[1]), table)
+        elif option == 'blur':
+            table = cv2.blur(table, (2, 2))
+            cv2.imwrite('%s_%s_blur.%s' % (sp[0], i, sp[1]), table)
+        elif option == 'invert':
+            print('invert')
+        i += 1
+
     table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     return table
 
@@ -2350,10 +2373,17 @@ if __name__ == '__main__':
     file = open('result.txt', mode='wt', encoding='utf-8')
     file.write('0')
     file.close()
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 1: 
         args = []
         for i in range(1, len(sys.argv)):
-            args.append(sys.argv[i])
+            if sys.argv[i].find('option=') > -1:
+                sp = sys.argv[i].split('=')
+                if len(sp) == 2:
+                    option_params = sp[1].split(',')
+                    for option in option_params:
+                        options.append(option)
+            else:
+                args.append(sys.argv[i])
         process(args)
         file = open('result.txt', mode='wt', encoding='utf-8')
         file.write('1')
