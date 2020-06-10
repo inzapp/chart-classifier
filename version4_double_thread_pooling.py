@@ -2360,7 +2360,7 @@ def append_g_var_to_excel(ws, wb, g_var):
     ws ["OP" + ws_cnt] = g_var['img_sgaw_pref_pre']
     ws ["OQ" + ws_cnt] = g_var['img_rawvtg_pre']
     ws ["OR" + ws_cnt] = g_var['img_rawf_pre']
-    wb.save("OOMII.xlsx")
+    wb.save(new_path + "/OOMII.xlsx")
     return
 
 
