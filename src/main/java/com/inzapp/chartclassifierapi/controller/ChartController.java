@@ -51,10 +51,17 @@ public class ChartController {
 		}
 
 		// run python process and wait until end
-		Process p = Runtime.getRuntime().exec(String.format("python ocr.py path=%s option=%s",
+		Process process = Runtime.getRuntime().exec(String.format("python ocr.py path=%s option=%s",
 				this.pathsToString(paths), this.optionsToString(options)));
-		p.waitFor();
-		p.destroy();
+		BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+		while (true) {
+			if (br.readLine() == null) {
+				break;
+			}
+		}
+		br.close();
+		process.waitFor();
+		process.destroy();
 
 		// return result
 		String result = this.getFileContent("result.txt");
