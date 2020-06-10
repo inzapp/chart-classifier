@@ -16,7 +16,10 @@ from concurrent.futures import ThreadPoolExecutor
 pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
 # pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR-4.0/tesseract.exe'
 pool = ThreadPoolExecutor(8)
-g_var = {}
+pool2 = ThreadPoolExecutor(3)
+options = []
+ori_path = ''
+new_path = ''
 
 print('header loading start')
 header_type01_type02 = cv2.imread('headers/type01_type02.jpg', cv2.IMREAD_COLOR)
@@ -28,6 +31,17 @@ header_type07_1 = cv2.imread('headers/type07_1.jpg', cv2.IMREAD_COLOR)
 header_type07_2 = cv2.imread('headers/type07_2.jpg', cv2.IMREAD_COLOR)
 header_type08 = cv2.imread('headers/type08.jpg', cv2.IMREAD_COLOR)
 print('header loading end')
+
+before_image_files_counter = 0
+type01_img_cnt = 0
+type02_img_cnt = 0
+type03_img_cnt = 0
+type04_img_cnt = 0
+type05_img_cnt = 0
+type06_img_cnt = 0
+type07_img_cnt = 0
+type08_img_cnt = 0
+typeUK_img_cnt = 0
 
 
 def detect(image, template, ratio):
@@ -41,7 +55,7 @@ def get_max_matched_res(image, template):
     fs = []
     ratio = 0.980
     for i in range(1, 6 + 1):
-        fs.append(pool.submit(detect, image, template, ratio))
+        fs.append(pool2.submit(detect, image, template, ratio))
         ratio += 0.0005
 
     max_template_match_val  = -1
@@ -65,6 +79,28 @@ def get_table(image, file_name, header, table_w, table_h):
     table_x = loc[0]
     table_y = loc[1] + h
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
+
+
+    # pre-process image if options exist
+    if os.path.exists ('progress') == 0:
+        os.mkdir('progress')
+    sp = file_name.split('.')
+    sp[0] = 'progress/' + sp[0]
+    i = 0
+    for option in options:
+        if option == 'grayscale':
+            table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
+            cv2.imwrite('%s_%s_grayscale.%s' % (sp[0], i, sp[1]), table)
+        elif option == 'threshold':
+            tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
+            cv2.imwrite('%s_%s_threshold.%s' % (sp[0], i, sp[1]), table)
+        elif option == 'blur':
+            table = cv2.blur(table, (2, 2))
+            cv2.imwrite('%s_%s_blur.%s' % (sp[0], i, sp[1]), table)
+        elif option == 'invert':
+            print('invert')
+        i += 1
+
     table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     return table
 
@@ -98,30 +134,6 @@ def table_to_arr(table, file_name, white_list = ''):
     return arr
 
 
-# def table_to_arr_2(table, file_name, row, col, white_list = ''):
-#     height, width, channel = table.shape
-#     cell_width = int(width / row)
-#     cell_height = int(height / col)
-
-#     cfs = []
-#     for y in range(cell_height, height + 1, cell_height):
-#         for x in range(cell_width, width + 1, cell_width):
-#             print(x - cell_width)
-#             print(y - cell_height)
-#             print(x)
-#             print(y)
-#             print()
-#             cell = table[y - cell_height:y, x - cell_width:x]
-#             cv2.imshow('cell', cell)
-#             cv2.waitKey(0)
-#             # cfs.append(pool.submit(ocr_cell, cell))
-
-#     arr = []
-#     for f in cfs:
-#         f.result()
-#     return
-
-
 def ocr_cell(cell):
     cell = cv2.resize(cell, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
     return pytesseract.image_to_string(cell, config='-psm 6 digits')
@@ -140,934 +152,931 @@ def ocr_for_title_searching(submat):
     res = pytesseract.image_to_string(submat, config='-psm 6')
     return res
 
+
+def process_chart_and_get_v_gar(cur_before_image_file_path):
+    global before_image_files_counter
+    global type01_img_cnt
+    global type02_img_cnt
+    global type03_img_cnt
+    global type04_img_cnt
+    global type05_img_cnt
+    global type06_img_cnt
+    global type07_img_cnt
+    global type08_img_cnt
+    global typeUK_img_cnt
+
+    g_var = new_g_var()
+    cur_before_image_file_name = os.path.basename(cur_before_image_file_path)
+    chart_image = cv2.imread(cur_before_image_file_path)
+
+    q = Queue()
+    fs = []
+    arr = []
     
-def process(before_path):
-    before_image_file_paths = []
-    if len(before_path) == 1 and os.path.isdir(before_path[0]) == 1:
-        before_image_file_paths = glob.glob(before_path[0] + "/*.jpg")
-    else:
-        before_image_file_paths = before_path
-
-    before_image_files_counter = 0
-    type01_img_cnt = 0
-    type02_img_cnt = 0
-    type03_img_cnt = 0
-    type04_img_cnt = 0
-    type05_img_cnt = 0
-    type06_img_cnt = 0
-    type07_img_cnt = 0
-    type08_img_cnt = 0
-    typeUK_img_cnt = 0
-
-    ws, wb = init_worksheet()
-    for cur_before_image_file_path in before_image_file_paths:
-        reset_g_var()
-        cur_before_image_file_name = os.path.basename(cur_before_image_file_path)
-        chart_image = cv2.imread(cur_before_image_file_path)
-        before_image_files_counter += 1
-
-        q = Queue()
-        fs = []
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[167:223, 239:445])) # Methacholine
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[177:217, 156:247])) # aridol
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[360:390, 38:111])) # Diffusing
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[266:295, 1:89])) # Spirometry
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[6:40, 245:367])) # CATHOLIC
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[323:596, 657:914])) # ''
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[6:40, 245:367])) # CATHOLIC
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[66:99, 538:647])) # REPORT
-        fs.append(pool.submit(ocr_for_title_searching, chart_image[266:303, 3:44])) # Lung
-
-        title_res = []
-        for f in fs:
-            title_res.append(f.result())
-        fs = []
+    #[s_y:e_y, s_x:e_x]
+    if ocr_for_title_searching(chart_image[167:223, 239:445]) == 'Methacholine':
+        g_var['img_type'] = 'type01'
+        table = get_table(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
+        arr = table_to_arr(table, cur_before_image_file_name)
         
-        #[s_y:e_y, s_x:e_x]
-        if title_res[0] == 'Methacholine':
-            print('type01')
-            g_var['img_type'] = 'type01'
-            table = get_table(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
-            arr = table_to_arr(table, cur_before_image_file_name)
-            
-            # fvc dose
-            for i in range(0, 5 + 1):
-                g_var['img_fvc_dose_lv' + str(i + 1)] = arr[0][i]
-
-            # fvc liters
-            g_var['img_fvc_ref'] = arr[1][0]
-            g_var['img_fvc_pre'] = arr[1][1]
-            for i in range(2, 7 + 1):
-                g_var['img_fvc_lv' + str(i - 1)] = arr[1][i]
-
-            # fvc % ref
-            g_var['img_fvc_pref_pre'] = arr[2][0]
-            for i in range(1, 6 + 1):
-                g_var['img_fvc_pref_lv' + str(i)] = arr[2][i]
-
-            # fvc % chg
-            for i in range(0, 5 + 1):
-                g_var['img_fvc_pchg_lv' + str(i + 1)] = arr[3][i]
-
-            # fev1 dose
-            for i in range(0, 5 + 1):
-                g_var['img_fev1_dose_lv' + str(i + 1)] = arr[4][i]
-
-            # fev1 liters
-            g_var['img_fev1_ref'] = arr[5][0]
-            g_var['img_fev1_pre'] = arr[5][1]
-            for i in range(2, 7 + 1):
-                g_var['img_fev1_lv' + str(i - 1)] = arr[5][i]
-
-            # fev1 % ref
-            g_var['img_fev1_pref_pre'] = arr[6][0]
-            for i in range(1, 6 + 1):
-                g_var['img_fev1_pref_lv' + str(i)] = arr[6][i]
-
-            # fev1 % chg
-            for i in range(0, 5 + 1):
-                g_var['img_fev1_pchg_lv' + str(i + 1)] = arr[7][i]
-
-            # fef25-75% dose
-            for i in range(0, 5 + 1):
-                g_var['img_fef25_75_lv' + str(i + 1)] = arr[8][i]
-
-            # fef25-75%
-            for i in range(0, 5 + 1):
-                g_var['img_fef25_75_dose_lv' + str(i + 1)] = arr[9][i]
-
-            # fef25-75% % ref
-            g_var['img_fef25_75_pre'] = arr[10][0]
-            for i in range(1, 6 + 1):
-                g_var['img_fef25_75_lv' + str(i)] = arr[10][i]
-
-            # fef25-75% % chg
-            for i in range(0, 5 + 1):
-                g_var['img_fef25_75_pchg_lv' + str(i + 1)] = arr[11][i]
-            
-            # pef lsec dose
-            for i in range(0, 5 + 1):
-                g_var['img_pef_dose_lv' + str(i + 1)] = arr[12][i]
-
-            # pef lsec
-            g_var['img_pef_ref'] = arr[13][0]
-            g_var['img_pef_pre'] = arr[13][1]
-            for i in range(2, 7 + 1):
-                g_var['img_pef_lv' + str(i - 1)] = arr[13][i]
-
-            # pef lsec % ref
-            g_var['img_pef_pref_pre'] = arr[14][0]
-            for i in range(1, 6 + 1):
-                g_var['img_pef_pref_lv' +  str(i)] = arr[14][i]
-
-            # pef lsec % chg
-            for i in range(0, 5 + 1):
-                g_var['img_pef_pchg_lv' + str(i + 1)] = arr[15][i]
-
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-            type01_img_cnt += 1
-            pass
-
-        elif title_res[1] == 'aridol':
-            print('type02')
-            g_var['img_type'] = 'type02'
-            table = get_table(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
-            arr = table_to_arr(table, cur_before_image_file_name)
-
-            # fvc dose
-            for i in range(0, 8 + 1):
-                g_var['img_fvc_dose_lv' + str(i + 1)] = arr[0][i]
-
-            # fvc liters
-            g_var['img_fvc_ref'] = arr[1][0]
-            g_var['img_fvc_pre'] = arr[1][1]
-            for i in range(2, 10 + 1):
-                g_var['img_fvc_lv' + str(i - 1)] = arr[1][i]
-
-            # fvc % ref
-            g_var['img_fvc_pref_pre'] = arr[2][0]
-            for i in range(1, 9 + 1):
-                g_var['img_fvc_pref_lv' + str(i)] = arr[2][i]
-
-            # fvc % chg
-            for i in range(0, 8 + 1):
-                g_var['img_fvc_pchg_lv' + str(i + 1)] = arr[3][i]
-
-            # fev1 dose
-            for i in range(0, 8 + 1):
-                g_var['img_fev1_dose_lv' + str(i + 1)] = arr[4][i]
-
-            # fev1 liters
-            g_var['img_fev1_ref'] = arr[5][0]
-            g_var['img_fev1_pre'] = arr[5][1]
-            for i in range(2, 10 + 1):
-                g_var['img_fev1_lv' + str(i - 1)] = arr[5][i]
-
-            # fev1 % ref
-            g_var['img_fev1_pref_pre'] = arr[6][0]
-            for i in range(1, 9 + 1):
-                g_var['img_fev1_pref_lv' + str(i)] = arr[6][i]
-
-            # fev1 % chg
-            for i in range(0, 8 + 1):
-                g_var['img_fev1_pchg_lv' + str(i + 1)] = arr[7][i]
-
-            # fef25-75% dose
-            for i in range(0, 8 + 1):
-                g_var['img_fef25_75_lv' + str(i + 1)] = arr[8][i]
-
-            # fef25-75%
-            for i in range(0, 10 + 1):
-                g_var['img_fef25_75_dose_lv' + str(i + 1)] = arr[9][i]
-
-            # fef25-75% % ref
-            g_var['img_fef25_75_pre'] = arr[10][0]
-            for i in range(1, 9 + 1):
-                g_var['img_fef25_75_lv' + str(i)] = arr[10][i]
-
-            # fef25-75% % chg
-            for i in range(0, 8 + 1):
-                g_var['img_fef25_75_pchg_lv' + str(i + 1)] = arr[11][i]
-            
-            # pef lsec dose
-            for i in range(0, 8 + 1):
-                g_var['img_pef_dose_lv' + str(i + 1)] = arr[12][i]
-
-            # pef lsec
-            g_var['img_pef_ref'] = arr[13][0]
-            g_var['img_pef_pre'] = arr[13][1]
-            for i in range(2, 10 + 1):
-                g_var['img_pef_lv' + str(i - 1)] = arr[13][i]
-
-            # pef lsec % ref
-            g_var['img_pef_pref_pre'] = arr[14][0]
-            for i in range(1, 9 + 1):
-                g_var['img_pef_pref_lv' +  str(i)] = arr[14][i]
-
-            # pef lsec % chg
-            for i in range(0, 8 + 1):
-                g_var['img_pef_pchg_lv' + str(i + 1)] = arr[15][i]
-
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-
-            type02_img_cnt += 1
-            pass
-    
-        elif title_res[2] == 'Diffusing':
-            print('type03')
-            g_var['img_type'] = 'type03'
-            table = get_table(chart_image, cur_before_image_file_name, header_type03, 220, 140)
-            arr = table_to_arr(table, cur_before_image_file_name)
-
-            g_var['img_dlco_ref'] = arr[0][0]
-            g_var['img_dlco_pre'] = arr[0][1]
-            g_var['img_dlco_pref_pre'] = arr[0][2]
-            g_var['img_dladj_ref'] = arr[1][0]
-            g_var['img_dladj_pre'] = arr[1][1]
-            g_var['img_dladj_pref_pre'] = arr[1][2]
-            g_var['img_dlcodva_ref'] = arr[2][0]
-            g_var['img_dlcodva_pre'] = arr[2][1]
-            g_var['img_dlcodva_pref_pre'] = arr[2][2]
-            g_var['img_dldvaadj_ref'] = arr[3][0]
-            g_var['img_dldvaadj_pre'] = arr[3][1]
-            g_var['img_dldvaadj_pref_pre'] = arr[3][2]
-            g_var['img_va_pre'] = arr[4][0]
-            g_var['img_ivc_pre'] = arr[5][0]
-            g_var['img_dlcoecode_pre'] = arr[6][0]
-
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-            type03_img_cnt += 1
-            pass
-
-        elif title_res[3] == 'Spirometry':
-            print('type04')
-            g_var['img_type'] = 'type04'
-
-            table = get_table(chart_image, cur_before_image_file_name, header_type04, 430, 900)
-            arr = table_to_arr(table, cur_before_image_file_name)
-
-            # spirometry section start
-            g_var['img_fvc_ref'] = arr[0][0]
-            g_var['img_fvc_pre'] = arr[0][1]
-            g_var['img_fvc_pref_pre'] = arr[0][2]
-            if len(arr[0]) == 6:
-                g_var['img_fvc_post'] = arr[0][3]
-                g_var['img_fvc_pref_post'] = arr[0][4]
-                g_var['img_fvc_pchg'] = arr[0][5]
-            
-            g_var['img_fev05_ref'] = arr[1][0]
-            g_var['img_fev05_pre'] = arr[1][1]
-            g_var['img_fev05_pref_pre'] = arr[1][2]
-            if len(arr[1]) == 6:
-                g_var['img_fev05_post'] = arr[1][3]
-                g_var['img_fev05_pref_post'] = arr[1][4]
-                g_var['img_fev05_pchg'] = arr[1][5]
-
-            g_var['img_fev1_ref'] = arr[2][0]
-            g_var['img_fev1_pre'] = arr[2][1]
-            g_var['img_fev1_pref_pre'] = arr[2][2]
-            if len(arr[2]) == 6:
-                g_var['img_fev1_post'] = arr[2][3]
-                g_var['img_fev1_pref_post'] = arr[2][4]
-                g_var['img_fev1_pchg'] = arr[2][5]
-
-            g_var['img_fev1dfvc_ref'] = arr[3][0]
-            g_var['img_fev1dfvc_pre'] = arr[3][1]
-            if len(arr[3]) == 3:
-                g_var['img_fev1dfvc_post'] = arr[3][2]
-
-            g_var['img_fev3dfvc_ref'] = arr[4][0]
-            g_var['img_fev3dfvc_pre'] = arr[4][1]
-            if len(arr[4]) == 3:
-                g_var['img_fev3dfvc_post'] = arr[4][2]
-
-            g_var['img_fef25_75_ref'] = arr[5][0]
-            g_var['img_fef25_75_pre'] = arr[5][1]
-            g_var['img_fef25_75_pref_pre'] = arr[5][2]
-            if len(arr[5]) == 6:
-                g_var['img_fef25_75_post'] = arr[5][3]
-                g_var['img_fef25_75_pref_post'] = arr[5][4]
-                g_var['img_fef25_75_pchg'] = arr[5][5]
-
-            g_var['img_fef75_85_ref'] = arr[6][0]
-            g_var['img_fef75_85_pre'] = arr[6][1]
-            g_var['img_fef75_85_pref_pre'] = arr[6][2]
-            if len(arr[6]) == 6:
-                g_var['img_fef75_85_post'] = arr[6][3]
-                g_var['img_fef75_85_pref_post'] = arr[6][4]
-                g_var['img_fef75_85_pchg'] = arr[6][5]
-
-            g_var['img_fef25_pre'] = arr[7][0]
-            if len(arr[7]) == 3:
-                g_var['img_fef25_post'] = arr[7][1]
-                g_var['img_fef25_pchg'] = arr[7][2]
-
-            g_var['img_fef50_ref'] = arr[8][0]
-            g_var['img_fef50_pre'] = arr[8][1]
-            g_var['img_fef50_pref_pre'] = arr[8][2]
-            if len(arr[8]) == 6:
-                g_var['img_fef50_post'] = arr[8][3]
-                g_var['img_fef50_pref_post'] = arr[8][4]
-                g_var['img_fef50_pchg'] = arr[8][5]
-
-            g_var['img_fef75_ref'] = arr[9][0]
-            g_var['img_fef75_pre'] = arr[9][1]
-            g_var['img_fef75_pref_pre'] = arr[9][2]
-            if len(arr[9]) == 6:
-                g_var['img_fef75_post'] = arr[9][3]
-                g_var['img_fef75_pref_post'] = arr[9][4]
-                g_var['img_fef75_pchg'] = arr[9][5]
-
-            g_var['img_fef200_1200_ref'] = arr[10][0]
-            g_var['img_fef200_1200_pre'] = arr[10][1]
-            g_var['img_fef200_1200_pref_pre'] = arr[10][2]
-            if len(arr[10]) == 6:
-                g_var['img_fef200_1200_post'] = arr[10][3]
-                g_var['img_fef200_1200_pref_post'] = arr[10][4]
-                g_var['img_fef200_1200_pchg'] = arr[10][5]
-
-            g_var['img_pef_ref'] = arr[11][0]
-            g_var['img_pef_pre'] = arr[11][1]
-            g_var['img_pef_pref_pre'] = arr[11][2]
-            if len(arr[11]) == 6:
-                g_var['img_pef_post'] = arr[11][3]
-                g_var['img_pef_pref_post'] = arr[11][4]
-                g_var['img_pef_pchg'] = arr[11][5]
-
-            g_var['img_fivc_ref'] = arr[12][0]
-            g_var['img_fivc_pre'] = arr[12][1]
-            g_var['img_fivc_pref_pre'] = arr[12][2]
-            if len(arr[12]) == 6:
-                g_var['img_fivc_post'] = arr[12][3]
-                g_var['img_fivc_pref_post'] = arr[12][4]
-                g_var['img_fivc_pchg'] = arr[12][5]
-
-            g_var['img_fvlecode_pre'] = arr[13][0]
-            if len(arr[13]) == 2:
-                g_var['img_fvlecode_post'] = arr[13][1]
-            # spirometry section end
-
-            # lung volumes section start
-            g_var['img_tlc_ref'] = arr[14][0]
-            g_var['img_tlc_pre'] = arr[14][1]
-            g_var['img_tlc_pref_pre'] = arr[14][2]
-
-            g_var['img_vc_ref'] = arr[15][0]
-            g_var['img_vc_pre'] = arr[15][1]
-            g_var['img_vc_pref_pre'] = arr[15][2]
-
-            g_var['img_ic_ref'] = arr[16][0]
-            g_var['img_ic_pre'] = arr[16][1]
-            g_var['img_ic_pref_pre'] = arr[16][2]
-
-            g_var['img_frcpl_ref'] = arr[17][0]
-            g_var['img_frcpl_pre'] = arr[17][1]
-            g_var['img_frcpl_pref_pre'] = arr[17][2]
-
-            g_var['img_erv_ref'] = arr[18][0]
-            g_var['img_erv_pre'] = arr[18][1]
-            g_var['img_erv_pref_pre'] = arr[18][2]
-
-            g_var['img_rv_ref'] = arr[19][0]
-            g_var['img_rv_pre'] = arr[19][1]
-            g_var['img_rv_pref_pre'] = arr[19][2]
-
-            g_var['img_rvdtlc_ref'] = arr[20][0]
-            g_var['img_rvdtlc_pre'] = arr[20][1]
-
-            g_var['img_vtg_pre'] = arr[21][0]
-
-            g_var['img_vt_pre'] = arr[22][0]
-            # lung volumes section end
-
-            # diffusing capacity section start
-            g_var['img_dlco_ref'] = arr[23][0]
-            g_var['img_dlco_pre'] = arr[23][1]
-            g_var['img_dlco_pref_pre'] = arr[23][2]
-
-            g_var['img_dladj_ref'] = arr[24][0]
-            g_var['img_dladj_pre'] = arr[24][1]
-            g_var['img_dladj_pref_pre'] = arr[24][2]
-
-            g_var['img_dlcodva_ref'] = arr[25][0]
-            g_var['img_dlcodva_pre'] = arr[25][1]
-            g_var['img_dlcodva_pref_pre'] = arr[25][2]
-
-            g_var['img_dldvaadj_ref'] = arr[26][0]
-            g_var['img_dldvaadj_pre'] = arr[26][1]
-            g_var['img_dldvaadj_pref_pre'] = arr[26][2]
-
-            g_var['img_va_pre'] = arr[27][0]
-
-            g_var['img_ivc_pre'] = arr[28][0]
-            # diffusing capacity section end
-
-            # resistence section start
-            g_var['img_rawtotal_pre'] = arr[29][0]
-
-            g_var['img_rawinsp_pre'] = arr[30][0]
-
-            g_var['img_rawexp_pre'] = arr[31][0]
-
-            g_var['img_raw_ref'] = arr[32][0]
-            g_var['img_raw_pre'] = arr[32][1]
-            g_var['img_raw_pref_pre'] = arr[32][2]
-
-            g_var['img_gaw_ref'] = arr[33][0]
-            g_var['img_gaw_pre'] = arr[33][1]
-            g_var['img_gaw_pref_pre'] = arr[33][2]
-
-            g_var['img_sraw_ref'] = arr[34][0]
-            g_var['img_sraw_pre'] = arr[34][1]
-            g_var['img_sraw_pref_pre'] = arr[34][2]
-
-            g_var['img_sgaw_ref'] = arr[35][0]
-            g_var['img_sgaw_pre'] = arr[35][1]
-            g_var['img_sgaw_pref_pre'] = arr[35][2]
-
-            g_var['img_rawvtg_pre'] = arr[36][0]
-
-            g_var['img_rawf_pre'] = arr[37][0]
-            # resistence section start
-
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-            type04_img_cnt += 1
-            pass
-
-        elif title_res[4] == 'CATHOLIC' and title_res[5] == '':
-            print('type05')
-            g_var['img_type'] = 'type05'
-            table = get_table(chart_image, cur_before_image_file_name, header_type05, 330, 300)
-            arr = table_to_arr(table, cur_before_image_file_name, '<')
-            
-            i = 0
-            g_var['img_fvc_pred'] = arr[i][0]
-            g_var['img_fvc_pre'] = arr[i][1]
-            g_var['img_fvc_pre_ppred'] = arr[i][2]
-
+        # fvc dose
+        for i in range(0, 5 + 1):
+            g_var['img_fvc_dose_lv' + str(i + 1)] = arr[0][i]
+
+        # fvc liters
+        g_var['img_fvc_ref'] = arr[1][0]
+        g_var['img_fvc_pre'] = arr[1][1]
+        for i in range(2, 7 + 1):
+            g_var['img_fvc_lv' + str(i - 1)] = arr[1][i]
+
+        # fvc % ref
+        g_var['img_fvc_pref_pre'] = arr[2][0]
+        for i in range(1, 6 + 1):
+            g_var['img_fvc_pref_lv' + str(i)] = arr[2][i]
+
+        # fvc % chg
+        for i in range(0, 5 + 1):
+            g_var['img_fvc_pchg_lv' + str(i + 1)] = arr[3][i]
+
+        # fev1 dose
+        for i in range(0, 5 + 1):
+            g_var['img_fev1_dose_lv' + str(i + 1)] = arr[4][i]
+
+        # fev1 liters
+        g_var['img_fev1_ref'] = arr[5][0]
+        g_var['img_fev1_pre'] = arr[5][1]
+        for i in range(2, 7 + 1):
+            g_var['img_fev1_lv' + str(i - 1)] = arr[5][i]
+
+        # fev1 % ref
+        g_var['img_fev1_pref_pre'] = arr[6][0]
+        for i in range(1, 6 + 1):
+            g_var['img_fev1_pref_lv' + str(i)] = arr[6][i]
+
+        # fev1 % chg
+        for i in range(0, 5 + 1):
+            g_var['img_fev1_pchg_lv' + str(i + 1)] = arr[7][i]
+
+        # fef25-75% dose
+        for i in range(0, 5 + 1):
+            g_var['img_fef25_75_lv' + str(i + 1)] = arr[8][i]
+
+        # fef25-75%
+        for i in range(0, 5 + 1):
+            g_var['img_fef25_75_dose_lv' + str(i + 1)] = arr[9][i]
+
+        # fef25-75% % ref
+        g_var['img_fef25_75_pre'] = arr[10][0]
+        for i in range(1, 6 + 1):
+            g_var['img_fef25_75_lv' + str(i)] = arr[10][i]
+
+        # fef25-75% % chg
+        for i in range(0, 5 + 1):
+            g_var['img_fef25_75_pchg_lv' + str(i + 1)] = arr[11][i]
+        
+        # pef lsec dose
+        for i in range(0, 5 + 1):
+            g_var['img_pef_dose_lv' + str(i + 1)] = arr[12][i]
+
+        # pef lsec
+        g_var['img_pef_ref'] = arr[13][0]
+        g_var['img_pef_pre'] = arr[13][1]
+        for i in range(2, 7 + 1):
+            g_var['img_pef_lv' + str(i - 1)] = arr[13][i]
+
+        # pef lsec % ref
+        g_var['img_pef_pref_pre'] = arr[14][0]
+        for i in range(1, 6 + 1):
+            g_var['img_pef_pref_lv' +  str(i)] = arr[14][i]
+
+        # pef lsec % chg
+        for i in range(0, 5 + 1):
+            g_var['img_pef_pchg_lv' + str(i + 1)] = arr[15][i]
+
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+        type01_img_cnt += 1
+        pass
+
+    elif ocr_for_title_searching(chart_image[177:217, 156:247]) == 'aridol':
+        g_var['img_type'] = 'type02'
+        table = get_table(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
+        arr = table_to_arr(table, cur_before_image_file_name)
+
+        # fvc dose
+        for i in range(0, 8 + 1):
+            g_var['img_fvc_dose_lv' + str(i + 1)] = arr[0][i]
+
+        # fvc liters
+        g_var['img_fvc_ref'] = arr[1][0]
+        g_var['img_fvc_pre'] = arr[1][1]
+        for i in range(2, 10 + 1):
+            g_var['img_fvc_lv' + str(i - 1)] = arr[1][i]
+
+        # fvc % ref
+        g_var['img_fvc_pref_pre'] = arr[2][0]
+        for i in range(1, 9 + 1):
+            g_var['img_fvc_pref_lv' + str(i)] = arr[2][i]
+
+        # fvc % chg
+        for i in range(0, 8 + 1):
+            g_var['img_fvc_pchg_lv' + str(i + 1)] = arr[3][i]
+
+        # fev1 dose
+        for i in range(0, 8 + 1):
+            g_var['img_fev1_dose_lv' + str(i + 1)] = arr[4][i]
+
+        # fev1 liters
+        g_var['img_fev1_ref'] = arr[5][0]
+        g_var['img_fev1_pre'] = arr[5][1]
+        for i in range(2, 10 + 1):
+            g_var['img_fev1_lv' + str(i - 1)] = arr[5][i]
+
+        # fev1 % ref
+        g_var['img_fev1_pref_pre'] = arr[6][0]
+        for i in range(1, 9 + 1):
+            g_var['img_fev1_pref_lv' + str(i)] = arr[6][i]
+
+        # fev1 % chg
+        for i in range(0, 8 + 1):
+            g_var['img_fev1_pchg_lv' + str(i + 1)] = arr[7][i]
+
+        # fef25-75% dose
+        for i in range(0, 8 + 1):
+            g_var['img_fef25_75_lv' + str(i + 1)] = arr[8][i]
+
+        # fef25-75%
+        for i in range(0, 10 + 1):
+            g_var['img_fef25_75_dose_lv' + str(i + 1)] = arr[9][i]
+
+        # fef25-75% % ref
+        g_var['img_fef25_75_pre'] = arr[10][0]
+        for i in range(1, 9 + 1):
+            g_var['img_fef25_75_lv' + str(i)] = arr[10][i]
+
+        # fef25-75% % chg
+        for i in range(0, 8 + 1):
+            g_var['img_fef25_75_pchg_lv' + str(i + 1)] = arr[11][i]
+        
+        # pef lsec dose
+        for i in range(0, 8 + 1):
+            g_var['img_pef_dose_lv' + str(i + 1)] = arr[12][i]
+
+        # pef lsec
+        g_var['img_pef_ref'] = arr[13][0]
+        g_var['img_pef_pre'] = arr[13][1]
+        for i in range(2, 10 + 1):
+            g_var['img_pef_lv' + str(i - 1)] = arr[13][i]
+
+        # pef lsec % ref
+        g_var['img_pef_pref_pre'] = arr[14][0]
+        for i in range(1, 9 + 1):
+            g_var['img_pef_pref_lv' +  str(i)] = arr[14][i]
+
+        # pef lsec % chg
+        for i in range(0, 8 + 1):
+            g_var['img_pef_pchg_lv' + str(i + 1)] = arr[15][i]
+
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+
+        type02_img_cnt += 1
+        pass
+
+    elif ocr_for_title_searching(chart_image[360:390, 38:111]) == 'Diffusing':
+        g_var['img_type'] = 'type03'
+        table = get_table(chart_image, cur_before_image_file_name, header_type03, 220, 140)
+        arr = table_to_arr(table, cur_before_image_file_name)
+
+        g_var['img_dlco_ref'] = arr[0][0]
+        g_var['img_dlco_pre'] = arr[0][1]
+        g_var['img_dlco_pref_pre'] = arr[0][2]
+        g_var['img_dladj_ref'] = arr[1][0]
+        g_var['img_dladj_pre'] = arr[1][1]
+        g_var['img_dladj_pref_pre'] = arr[1][2]
+        g_var['img_dlcodva_ref'] = arr[2][0]
+        g_var['img_dlcodva_pre'] = arr[2][1]
+        g_var['img_dlcodva_pref_pre'] = arr[2][2]
+        g_var['img_dldvaadj_ref'] = arr[3][0]
+        g_var['img_dldvaadj_pre'] = arr[3][1]
+        g_var['img_dldvaadj_pref_pre'] = arr[3][2]
+        g_var['img_va_pre'] = arr[4][0]
+        g_var['img_ivc_pre'] = arr[5][0]
+        g_var['img_dlcoecode_pre'] = arr[6][0]
+
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+        type03_img_cnt += 1
+        pass
+
+    elif ocr_for_title_searching(chart_image[266:295, 1:89]) == 'Spirometry':
+        g_var['img_type'] = 'type04'
+
+        table = get_table(chart_image, cur_before_image_file_name, header_type04, 430, 900)
+        arr = table_to_arr(table, cur_before_image_file_name)
+
+        # spirometry section start
+        g_var['img_fvc_ref'] = arr[0][0]
+        g_var['img_fvc_pre'] = arr[0][1]
+        g_var['img_fvc_pref_pre'] = arr[0][2]
+        if len(arr[0]) == 6:
+            g_var['img_fvc_post'] = arr[0][3]
+            g_var['img_fvc_pref_post'] = arr[0][4]
+            g_var['img_fvc_pchg'] = arr[0][5]
+        
+        g_var['img_fev05_ref'] = arr[1][0]
+        g_var['img_fev05_pre'] = arr[1][1]
+        g_var['img_fev05_pref_pre'] = arr[1][2]
+        if len(arr[1]) == 6:
+            g_var['img_fev05_post'] = arr[1][3]
+            g_var['img_fev05_pref_post'] = arr[1][4]
+            g_var['img_fev05_pchg'] = arr[1][5]
+
+        g_var['img_fev1_ref'] = arr[2][0]
+        g_var['img_fev1_pre'] = arr[2][1]
+        g_var['img_fev1_pref_pre'] = arr[2][2]
+        if len(arr[2]) == 6:
+            g_var['img_fev1_post'] = arr[2][3]
+            g_var['img_fev1_pref_post'] = arr[2][4]
+            g_var['img_fev1_pchg'] = arr[2][5]
+
+        g_var['img_fev1dfvc_ref'] = arr[3][0]
+        g_var['img_fev1dfvc_pre'] = arr[3][1]
+        if len(arr[3]) == 3:
+            g_var['img_fev1dfvc_post'] = arr[3][2]
+
+        g_var['img_fev3dfvc_ref'] = arr[4][0]
+        g_var['img_fev3dfvc_pre'] = arr[4][1]
+        if len(arr[4]) == 3:
+            g_var['img_fev3dfvc_post'] = arr[4][2]
+
+        g_var['img_fef25_75_ref'] = arr[5][0]
+        g_var['img_fef25_75_pre'] = arr[5][1]
+        g_var['img_fef25_75_pref_pre'] = arr[5][2]
+        if len(arr[5]) == 6:
+            g_var['img_fef25_75_post'] = arr[5][3]
+            g_var['img_fef25_75_pref_post'] = arr[5][4]
+            g_var['img_fef25_75_pchg'] = arr[5][5]
+
+        g_var['img_fef75_85_ref'] = arr[6][0]
+        g_var['img_fef75_85_pre'] = arr[6][1]
+        g_var['img_fef75_85_pref_pre'] = arr[6][2]
+        if len(arr[6]) == 6:
+            g_var['img_fef75_85_post'] = arr[6][3]
+            g_var['img_fef75_85_pref_post'] = arr[6][4]
+            g_var['img_fef75_85_pchg'] = arr[6][5]
+
+        g_var['img_fef25_pre'] = arr[7][0]
+        if len(arr[7]) == 3:
+            g_var['img_fef25_post'] = arr[7][1]
+            g_var['img_fef25_pchg'] = arr[7][2]
+
+        g_var['img_fef50_ref'] = arr[8][0]
+        g_var['img_fef50_pre'] = arr[8][1]
+        g_var['img_fef50_pref_pre'] = arr[8][2]
+        if len(arr[8]) == 6:
+            g_var['img_fef50_post'] = arr[8][3]
+            g_var['img_fef50_pref_post'] = arr[8][4]
+            g_var['img_fef50_pchg'] = arr[8][5]
+
+        g_var['img_fef75_ref'] = arr[9][0]
+        g_var['img_fef75_pre'] = arr[9][1]
+        g_var['img_fef75_pref_pre'] = arr[9][2]
+        if len(arr[9]) == 6:
+            g_var['img_fef75_post'] = arr[9][3]
+            g_var['img_fef75_pref_post'] = arr[9][4]
+            g_var['img_fef75_pchg'] = arr[9][5]
+
+        g_var['img_fef200_1200_ref'] = arr[10][0]
+        g_var['img_fef200_1200_pre'] = arr[10][1]
+        g_var['img_fef200_1200_pref_pre'] = arr[10][2]
+        if len(arr[10]) == 6:
+            g_var['img_fef200_1200_post'] = arr[10][3]
+            g_var['img_fef200_1200_pref_post'] = arr[10][4]
+            g_var['img_fef200_1200_pchg'] = arr[10][5]
+
+        g_var['img_pef_ref'] = arr[11][0]
+        g_var['img_pef_pre'] = arr[11][1]
+        g_var['img_pef_pref_pre'] = arr[11][2]
+        if len(arr[11]) == 6:
+            g_var['img_pef_post'] = arr[11][3]
+            g_var['img_pef_pref_post'] = arr[11][4]
+            g_var['img_pef_pchg'] = arr[11][5]
+
+        g_var['img_fivc_ref'] = arr[12][0]
+        g_var['img_fivc_pre'] = arr[12][1]
+        g_var['img_fivc_pref_pre'] = arr[12][2]
+        if len(arr[12]) == 6:
+            g_var['img_fivc_post'] = arr[12][3]
+            g_var['img_fivc_pref_post'] = arr[12][4]
+            g_var['img_fivc_pchg'] = arr[12][5]
+
+        g_var['img_fvlecode_pre'] = arr[13][0]
+        if len(arr[13]) == 2:
+            g_var['img_fvlecode_post'] = arr[13][1]
+        # spirometry section end
+
+        # lung volumes section start
+        g_var['img_tlc_ref'] = arr[14][0]
+        g_var['img_tlc_pre'] = arr[14][1]
+        g_var['img_tlc_pref_pre'] = arr[14][2]
+
+        g_var['img_vc_ref'] = arr[15][0]
+        g_var['img_vc_pre'] = arr[15][1]
+        g_var['img_vc_pref_pre'] = arr[15][2]
+
+        g_var['img_ic_ref'] = arr[16][0]
+        g_var['img_ic_pre'] = arr[16][1]
+        g_var['img_ic_pref_pre'] = arr[16][2]
+
+        g_var['img_frcpl_ref'] = arr[17][0]
+        g_var['img_frcpl_pre'] = arr[17][1]
+        g_var['img_frcpl_pref_pre'] = arr[17][2]
+
+        g_var['img_erv_ref'] = arr[18][0]
+        g_var['img_erv_pre'] = arr[18][1]
+        g_var['img_erv_pref_pre'] = arr[18][2]
+
+        g_var['img_rv_ref'] = arr[19][0]
+        g_var['img_rv_pre'] = arr[19][1]
+        g_var['img_rv_pref_pre'] = arr[19][2]
+
+        g_var['img_rvdtlc_ref'] = arr[20][0]
+        g_var['img_rvdtlc_pre'] = arr[20][1]
+
+        g_var['img_vtg_pre'] = arr[21][0]
+
+        g_var['img_vt_pre'] = arr[22][0]
+        # lung volumes section end
+
+        # diffusing capacity section start
+        g_var['img_dlco_ref'] = arr[23][0]
+        g_var['img_dlco_pre'] = arr[23][1]
+        g_var['img_dlco_pref_pre'] = arr[23][2]
+
+        g_var['img_dladj_ref'] = arr[24][0]
+        g_var['img_dladj_pre'] = arr[24][1]
+        g_var['img_dladj_pref_pre'] = arr[24][2]
+
+        g_var['img_dlcodva_ref'] = arr[25][0]
+        g_var['img_dlcodva_pre'] = arr[25][1]
+        g_var['img_dlcodva_pref_pre'] = arr[25][2]
+
+        g_var['img_dldvaadj_ref'] = arr[26][0]
+        g_var['img_dldvaadj_pre'] = arr[26][1]
+        g_var['img_dldvaadj_pref_pre'] = arr[26][2]
+
+        g_var['img_va_pre'] = arr[27][0]
+
+        g_var['img_ivc_pre'] = arr[28][0]
+        # diffusing capacity section end
+
+        # resistence section start
+        g_var['img_rawtotal_pre'] = arr[29][0]
+
+        g_var['img_rawinsp_pre'] = arr[30][0]
+
+        g_var['img_rawexp_pre'] = arr[31][0]
+
+        g_var['img_raw_ref'] = arr[32][0]
+        g_var['img_raw_pre'] = arr[32][1]
+        g_var['img_raw_pref_pre'] = arr[32][2]
+
+        g_var['img_gaw_ref'] = arr[33][0]
+        g_var['img_gaw_pre'] = arr[33][1]
+        g_var['img_gaw_pref_pre'] = arr[33][2]
+
+        g_var['img_sraw_ref'] = arr[34][0]
+        g_var['img_sraw_pre'] = arr[34][1]
+        g_var['img_sraw_pref_pre'] = arr[34][2]
+
+        g_var['img_sgaw_ref'] = arr[35][0]
+        g_var['img_sgaw_pre'] = arr[35][1]
+        g_var['img_sgaw_pref_pre'] = arr[35][2]
+
+        g_var['img_rawvtg_pre'] = arr[36][0]
+
+        g_var['img_rawf_pre'] = arr[37][0]
+        # resistence section start
+
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+        type04_img_cnt += 1
+        pass
+
+    elif ocr_for_title_searching(chart_image[6:40, 245:367]) == 'CATHOLIC' and ocr_for_title_searching(chart_image[323:596, 657:914]) == '':
+        g_var['img_type'] = 'type05'
+        table = get_table(chart_image, cur_before_image_file_name, header_type05, 330, 300)
+        arr = table_to_arr(table, cur_before_image_file_name, '<')
+        
+        i = 0
+        g_var['img_fvc_pred'] = arr[i][0]
+        g_var['img_fvc_pre'] = arr[i][1]
+        g_var['img_fvc_pre_ppred'] = arr[i][2]
+
+        i += 1
+        g_var['img_fev1_pred'] = arr[i][0]
+        g_var['img_fev1_pre'] = arr[i][1]
+        g_var['img_fev1_pre_ppred'] = arr[i][2]
+
+        i += 1
+        g_var['img_fev1dfvc_pred'] = arr[i][0]
+        g_var['img_fev1dfvc_pre'] = arr[i][1]
+
+        i += 1
+        g_var['img_fef25_75_pred'] = arr[i][0]
+        g_var['img_fef25_75_pre'] = arr[i][1]
+        g_var['img_fef25_75_pre_ppred'] = arr[i][2]
+
+        i += 1
+        g_var['img_isofef25_75_pred'] = arr[i][0]
+        g_var['img_isofef25_75_pre'] = arr[i][1]
+        g_var['img_isofef25_75_pre_ppred'] = arr[i][2]
+
+        i += 1
+        g_var['img_fef75_85_pred'] = arr[i][0]
+        g_var['img_fef75_85_pre'] = arr[i][1]
+        g_var['img_fef75_85_pre_ppred'] = arr[i][2]
+
+        i += 1
+        g_var['img_pef_pred'] = arr[i][0]
+        g_var['img_pef_pre'] = arr[i][1]
+        g_var['img_pef_pre_ppred'] = arr[i][2]
+
+        i += 1
+        g_var['img_peft_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_fet100_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_fivc_pred'] = arr[i][0]
+        g_var['img_fivc_pre'] = arr[i][1]
+        g_var['img_fivc_pre_ppred'] = arr[i][2]
+
+        if len(arr) == 15:
             i += 1
-            g_var['img_fev1_pred'] = arr[i][0]
-            g_var['img_fev1_pre'] = arr[i][1]
-            g_var['img_fev1_pre_ppred'] = arr[i][2]
+            g_var['img_fiv1_pre'] = arr[i][0]
 
+        i += 1
+        g_var['img_fefdfif50_pred'] = arr[i][0]
+        g_var['img_fefdfif50_pre'] = arr[i][1]
+
+        i += 1
+        g_var['img_volextrap_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_fvlecode_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_mvv_pred'] = arr[i][0]
+
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+        type05_img_cnt += 1
+        pass
+
+    elif ocr_for_title_searching(chart_image[6:40, 245:367]) == 'CATHOLIC':
+        g_var['img_type'] = 'type06'
+
+        table = get_table(chart_image, cur_before_image_file_name, header_type06, 610, 310)
+        arr = table_to_arr(table, cur_before_image_file_name, '<')
+
+        i = 0
+        g_var['img_fvc_pred'] = arr[i][0]
+        g_var['img_fvc_pre'] = arr[i][1]
+        g_var['img_fvc_pre_ppred'] = arr[i][2]
+        g_var['img_fvc_post'] = arr[i][3]
+        g_var['img_fvc_post_ppred'] = arr[i][4]
+        g_var['img_fvc_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_fev1_pred'] = arr[i][0]
+        g_var['img_fev1_pre'] = arr[i][1]
+        g_var['img_fev1_pre_ppred'] = arr[i][2]
+        g_var['img_fev1_post'] = arr[i][3]
+        g_var['img_fev1_post_ppred'] = arr[i][4]
+        g_var['img_fev1_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_fev1dfvc_pred'] = arr[i][0]
+        g_var['img_fev1dfvc_pre'] = arr[i][1]
+        g_var['img_fev1dfvc_post'] = arr[i][2]
+
+        i += 1
+        g_var['img_fef25_75_pred'] = arr[i][0]
+        g_var['img_fef25_75_pre'] = arr[i][1]
+        g_var['img_fef25_75_pre_ppred'] = arr[i][2]
+        g_var['img_fef25_75_post'] = arr[i][3]
+        g_var['img_fef25_75_post_ppred'] = arr[i][4]
+        g_var['img_fef25_75_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_isofef25_75_pred'] = arr[i][0]
+        g_var['img_isofef25_75_pre'] = arr[i][1]
+        g_var['img_isofef25_75_pre_ppred'] = arr[i][2]
+        g_var['img_isofef25_75_post'] = arr[i][3]
+        g_var['img_isofef25_75_post_ppred'] = arr[i][4]
+        g_var['img_isofef25_75_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_fef75_85_pred'] = arr[i][0]
+        g_var['img_fef75_85_pre'] = arr[i][1]
+        g_var['img_fef75_85_pre_ppred'] = arr[i][2]
+        g_var['img_fef75_85_post'] = arr[i][3]
+        g_var['img_fef75_85_post_ppred'] = arr[i][4]
+        g_var['img_fef75_85_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_pef_pred'] = arr[i][0]
+        g_var['img_pef_pre'] = arr[i][1]
+        g_var['img_pef_pre_ppred'] = arr[i][2]
+        g_var['img_pef_post'] = arr[i][3]
+        g_var['img_pef_post_ppred'] = arr[i][4]
+        g_var['img_pef_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_fet100_pre'] = arr[i][0]
+        g_var['img_fet100_post'] = arr[i][1]
+        g_var['img_fet100_pchg'] = arr[i][2]
+
+        i += 1
+        g_var['img_fivc_pred'] = arr[i][0]
+        g_var['img_fivc_pre'] = arr[i][1]
+        g_var['img_fivc_pre_ppred'] = arr[i][2]
+        g_var['img_fivc_post'] = arr[i][3]
+        g_var['img_fivc_post_ppred'] = arr[i][4]
+        g_var['img_fivc_pchg'] = arr[i][5]
+
+        i += 1
+        g_var['img_fev1_pred'] = arr[i][0]
+        g_var['img_fev1_pre'] = arr[i][1]
+        g_var['img_fev1_pre_ppred'] = arr[i][2]
+        g_var['img_fev1_post'] = arr[i][3]
+        g_var['img_fev1_post_ppred'] = arr[i][4]
+        g_var['img_fev1_pchg'] = arr[i][5]
+
+        if len(arr) == 15:
             i += 1
-            g_var['img_fev1dfvc_pred'] = arr[i][0]
-            g_var['img_fev1dfvc_pre'] = arr[i][1]
+            g_var['img_fiv1_pre'] = arr[i][0]
+            g_var['img_fiv1_post'] = arr[i][1]
+            g_var['img_fiv1_pchg'] = arr[i][2]
 
-            i += 1
-            g_var['img_fef25_75_pred'] = arr[i][0]
-            g_var['img_fef25_75_pre'] = arr[i][1]
-            g_var['img_fef25_75_pre_ppred'] = arr[i][2]
+        i += 1
+        g_var['img_fefdfif50_pred'] = arr[i][0]
+        g_var['img_fefdfif50_pre'] = arr[i][1]
+        g_var['img_fefdfif50_post'] = arr[i][2]
+        g_var['img_fefdfif50_pchg'] = arr[i][3]
 
-            i += 1
-            g_var['img_isofef25_75_pred'] = arr[i][0]
-            g_var['img_isofef25_75_pre'] = arr[i][1]
-            g_var['img_isofef25_75_pre_ppred'] = arr[i][2]
+        i += 1
+        g_var['img_volextrap_pre'] = arr[i][0]
+        g_var['img_volextrap_post'] = arr[i][1]
+        g_var['img_volextrap_pchg'] = arr[i][2]
 
-            i += 1
-            g_var['img_fef75_85_pred'] = arr[i][0]
-            g_var['img_fef75_85_pre'] = arr[i][1]
-            g_var['img_fef75_85_pre_ppred'] = arr[i][2]
+        i += 1
+        g_var['img_fvlecode_pre'] = arr[i][0]
+        g_var['img_fvlecode_post'] = arr[i][1]
 
-            i += 1
-            g_var['img_pef_pred'] = arr[i][0]
-            g_var['img_pef_pre'] = arr[i][1]
-            g_var['img_pef_pre_ppred'] = arr[i][2]
+        i += 1
+        g_var['img_mvv_pred'] = arr[i][0]
 
-            i += 1
-            g_var['img_peft_pre'] = arr[i][0]
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+        type06_img_cnt += 1
+        pass
 
-            i += 1
-            g_var['img_fet100_pre'] = arr[i][0]
+    elif ocr_for_title_searching(chart_image[66:99, 538:647]) == 'REPORT':
+        g_var['img_type'] = 'type07'
 
-            i += 1
-            g_var['img_fivc_pred'] = arr[i][0]
-            g_var['img_fivc_pre'] = arr[i][1]
-            g_var['img_fivc_pre_ppred'] = arr[i][2]
+        table = get_table(chart_image, cur_before_image_file_name, header_type07_1, 400, 185)
+        arr = table_to_arr(table, cur_before_image_file_name)
 
-            if len(arr) == 15:
-                i += 1
-                g_var['img_fiv1_pre'] = arr[i][0]
+        # best data chart start
+        i = 0
+        g_var['img_fvc_ref'] = arr[i][0]
+        g_var['img_fvc_pre'] = arr[i][1]
+        g_var['img_fvc_pref_pre'] = arr[i][2]
+        g_var['img_fvc_post'] = arr[i][3]
+        g_var['img_fvc_pref_post'] = arr[i][4]
+        g_var['img_fvc_pchg'] = arr[i][5]
 
-            i += 1
-            g_var['img_fefdfif50_pred'] = arr[i][0]
-            g_var['img_fefdfif50_pre'] = arr[i][1]
+        i += 1
+        g_var['img_fev1_ref'] = arr[i][0]
+        g_var['img_fev1_pre'] = arr[i][1]
+        g_var['img_fev1_pref_pre'] = arr[i][2]
+        g_var['img_fev1_post'] = arr[i][3]
+        g_var['img_fev1_pref_post'] = arr[i][4]
+        g_var['img_fev1_pchg'] = arr[i][5]
 
-            i += 1
-            g_var['img_volextrap_pre'] = arr[i][0]
+        i += 1
+        g_var['img_fev1dfvc_ref'] = arr[i][0]
+        g_var['img_fev1dfvc_pre'] = arr[i][1]
+        g_var['img_fev1dfvc_post'] = arr[i][2]
 
-            i += 1
-            g_var['img_fvlecode_pre'] = arr[i][0]
+        i += 1
+        g_var['img_fef25_75_ref'] = arr[i][0]
+        g_var['img_fef25_75_pre'] = arr[i][1]
+        g_var['img_fef25_75_pref_pre'] = arr[i][2]
+        g_var['img_fef25_75_post'] = arr[i][3]
+        g_var['img_fef25_75_pref_post'] = arr[i][4]
+        g_var['img_fef25_75_pchg'] = arr[i][5]
 
-            i += 1
-            g_var['img_mvv_pred'] = arr[i][0]
+        i += 1
+        g_var['img_pef_ref'] = arr[i][0]
+        g_var['img_pef_pre'] = arr[i][1]
+        g_var['img_pef_pref_pre'] = arr[i][2]
+        g_var['img_pef_post'] = arr[i][3]
+        g_var['img_pef_pref_post'] = arr[i][4]
+        g_var['img_pef_pchg'] = arr[i][5]
 
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-            type05_img_cnt += 1
-            pass
+        i += 1
+        g_var['img_peft_pre'] = arr[i][0]
+        g_var['img_peft_post'] = arr[i][1]
+        g_var['img_peft_pchg'] = arr[i][2]
 
-        elif title_res[6] == 'CATHOLIC':
-            print('type06')
-            g_var['img_type'] = 'type06'
+        i += 1
+        g_var['img_fet100_pre'] = arr[i][0]
+        g_var['img_fet100_post'] = arr[i][1]
+        g_var['img_fet100_pchg'] = arr[i][2]
 
-            table = get_table(chart_image, cur_before_image_file_name, header_type06, 610, 310)
-            arr = table_to_arr(table, cur_before_image_file_name, '<')
+        i += 1
+        g_var['img_fivc_ref'] = arr[i][0]
+        g_var['img_fivc_pre'] = arr[i][1]
+        g_var['img_fivc_pref_pre'] = arr[i][2]
+        g_var['img_fivc_post'] = arr[i][3]
+        g_var['img_fivc_pref_post'] = arr[i][4]
+        g_var['img_fivc_pchg'] = arr[i][5]
 
-            i = 0
-            g_var['img_fvc_pred'] = arr[i][0]
-            g_var['img_fvc_pre'] = arr[i][1]
-            g_var['img_fvc_pre_ppred'] = arr[i][2]
-            g_var['img_fvc_post'] = arr[i][3]
-            g_var['img_fvc_post_ppred'] = arr[i][4]
-            g_var['img_fvc_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_fev1_pred'] = arr[i][0]
-            g_var['img_fev1_pre'] = arr[i][1]
-            g_var['img_fev1_pre_ppred'] = arr[i][2]
-            g_var['img_fev1_post'] = arr[i][3]
-            g_var['img_fev1_post_ppred'] = arr[i][4]
-            g_var['img_fev1_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_fev1dfvc_pred'] = arr[i][0]
-            g_var['img_fev1dfvc_pre'] = arr[i][1]
-            g_var['img_fev1dfvc_post'] = arr[i][2]
-
-            i += 1
-            g_var['img_fef25_75_pred'] = arr[i][0]
-            g_var['img_fef25_75_pre'] = arr[i][1]
-            g_var['img_fef25_75_pre_ppred'] = arr[i][2]
-            g_var['img_fef25_75_post'] = arr[i][3]
-            g_var['img_fef25_75_post_ppred'] = arr[i][4]
-            g_var['img_fef25_75_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_isofef25_75_pred'] = arr[i][0]
-            g_var['img_isofef25_75_pre'] = arr[i][1]
-            g_var['img_isofef25_75_pre_ppred'] = arr[i][2]
-            g_var['img_isofef25_75_post'] = arr[i][3]
-            g_var['img_isofef25_75_post_ppred'] = arr[i][4]
-            g_var['img_isofef25_75_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_fef75_85_pred'] = arr[i][0]
-            g_var['img_fef75_85_pre'] = arr[i][1]
-            g_var['img_fef75_85_pre_ppred'] = arr[i][2]
-            g_var['img_fef75_85_post'] = arr[i][3]
-            g_var['img_fef75_85_post_ppred'] = arr[i][4]
-            g_var['img_fef75_85_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_pef_pred'] = arr[i][0]
-            g_var['img_pef_pre'] = arr[i][1]
-            g_var['img_pef_pre_ppred'] = arr[i][2]
-            g_var['img_pef_post'] = arr[i][3]
-            g_var['img_pef_post_ppred'] = arr[i][4]
-            g_var['img_pef_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_fet100_pre'] = arr[i][0]
-            g_var['img_fet100_post'] = arr[i][1]
-            g_var['img_fet100_pchg'] = arr[i][2]
-
-            i += 1
-            g_var['img_fivc_pred'] = arr[i][0]
-            g_var['img_fivc_pre'] = arr[i][1]
-            g_var['img_fivc_pre_ppred'] = arr[i][2]
-            g_var['img_fivc_post'] = arr[i][3]
-            g_var['img_fivc_post_ppred'] = arr[i][4]
-            g_var['img_fivc_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_fev1_pred'] = arr[i][0]
-            g_var['img_fev1_pre'] = arr[i][1]
-            g_var['img_fev1_pre_ppred'] = arr[i][2]
-            g_var['img_fev1_post'] = arr[i][3]
-            g_var['img_fev1_post_ppred'] = arr[i][4]
-            g_var['img_fev1_pchg'] = arr[i][5]
-
-            if len(arr) == 15:
-                i += 1
-                g_var['img_fiv1_pre'] = arr[i][0]
-                g_var['img_fiv1_post'] = arr[i][1]
-                g_var['img_fiv1_pchg'] = arr[i][2]
-
-            i += 1
-            g_var['img_fefdfif50_pred'] = arr[i][0]
-            g_var['img_fefdfif50_pre'] = arr[i][1]
-            g_var['img_fefdfif50_post'] = arr[i][2]
-            g_var['img_fefdfif50_pchg'] = arr[i][3]
-
-            i += 1
+        i += 1
+        if len(arr[i]) == 3:
             g_var['img_volextrap_pre'] = arr[i][0]
             g_var['img_volextrap_post'] = arr[i][1]
             g_var['img_volextrap_pchg'] = arr[i][2]
-
-            i += 1
-            g_var['img_fvlecode_pre'] = arr[i][0]
-            g_var['img_fvlecode_post'] = arr[i][1]
-
-            i += 1
-            g_var['img_mvv_pred'] = arr[i][0]
-
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-            type06_img_cnt += 1
-            pass
-
-        elif title_res[7] == 'REPORT':
-            print('type07')
-            g_var['img_type'] = 'type07'
-
-            table = get_table(chart_image, cur_before_image_file_name, header_type07_1, 400, 185)
-            arr = table_to_arr(table, cur_before_image_file_name)
-
-            # best data chart start
-            i = 0
-            g_var['img_fvc_ref'] = arr[i][0]
-            g_var['img_fvc_pre'] = arr[i][1]
-            g_var['img_fvc_pref_pre'] = arr[i][2]
-            g_var['img_fvc_post'] = arr[i][3]
-            g_var['img_fvc_pref_post'] = arr[i][4]
-            g_var['img_fvc_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_fev1_ref'] = arr[i][0]
-            g_var['img_fev1_pre'] = arr[i][1]
-            g_var['img_fev1_pref_pre'] = arr[i][2]
-            g_var['img_fev1_post'] = arr[i][3]
-            g_var['img_fev1_pref_post'] = arr[i][4]
-            g_var['img_fev1_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_fev1dfvc_ref'] = arr[i][0]
-            g_var['img_fev1dfvc_pre'] = arr[i][1]
-            g_var['img_fev1dfvc_post'] = arr[i][2]
-
-            i += 1
-            g_var['img_fef25_75_ref'] = arr[i][0]
-            g_var['img_fef25_75_pre'] = arr[i][1]
-            g_var['img_fef25_75_pref_pre'] = arr[i][2]
-            g_var['img_fef25_75_post'] = arr[i][3]
-            g_var['img_fef25_75_pref_post'] = arr[i][4]
-            g_var['img_fef25_75_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_pef_ref'] = arr[i][0]
-            g_var['img_pef_pre'] = arr[i][1]
-            g_var['img_pef_pref_pre'] = arr[i][2]
-            g_var['img_pef_post'] = arr[i][3]
-            g_var['img_pef_pref_post'] = arr[i][4]
-            g_var['img_pef_pchg'] = arr[i][5]
-
-            i += 1
-            g_var['img_peft_pre'] = arr[i][0]
-            g_var['img_peft_post'] = arr[i][1]
-            g_var['img_peft_pchg'] = arr[i][2]
-
-            i += 1
-            g_var['img_fet100_pre'] = arr[i][0]
-            g_var['img_fet100_post'] = arr[i][1]
-            g_var['img_fet100_pchg'] = arr[i][2]
-
-            i += 1
-            g_var['img_fivc_ref'] = arr[i][0]
-            g_var['img_fivc_pre'] = arr[i][1]
-            g_var['img_fivc_pref_pre'] = arr[i][2]
-            g_var['img_fivc_post'] = arr[i][3]
-            g_var['img_fivc_pref_post'] = arr[i][4]
-            g_var['img_fivc_pchg'] = arr[i][5]
-
-            i += 1
-            if len(arr[i]) == 3:
-                g_var['img_volextrap_pre'] = arr[i][0]
-                g_var['img_volextrap_post'] = arr[i][1]
-                g_var['img_volextrap_pchg'] = arr[i][2]
-            else:
-                g_var['img_volextrap_post'] = arr[i][0]
-
-            i += 1
-            g_var['img_fvlecode_pre'] = arr[i][0]
-            g_var['img_fvlecode_post'] = arr[i][1]
-            # best data chart end
-
-
-
-            # all trials chart start
-            table = get_table(chart_image, cur_before_image_file_name, header_type07_2, 400, 190)
-            arr = table_to_arr(table, cur_before_image_file_name)
-
-            i = 0
-            g_var['img_fvc_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
-            g_var['img_fvc_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
-            g_var['img_fvc_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
-            g_var['img_fvc_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
-            g_var['img_fvc_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
-            g_var['img_fvc_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
-            g_var['img_fvc_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
-            g_var['img_fvc_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
-
-            i += 1
-            g_var['img_fev1_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
-            g_var['img_fev1_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
-            g_var['img_fev1_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
-            g_var['img_fev1_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
-            g_var['img_fev1_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
-            g_var['img_fev1_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
-            g_var['img_fev1_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
-            g_var['img_fev1_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
-
-            i += 1
-            g_var['img_fev1dfvc_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
-            g_var['img_fev1dfvc_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
-            g_var['img_fev1dfvc_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
-            g_var['img_fev1dfvc_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
-            g_var['img_fev1dfvc_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
-            g_var['img_fev1dfvc_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
-            g_var['img_fev1dfvc_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
-            g_var['img_fev1dfvc_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
-
-            i += 1
-            g_var['img_fef25_75_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
-            g_var['img_fef25_75_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
-            g_var['img_fef25_75_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
-            g_var['img_fef25_75_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
-            g_var['img_fef25_75_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
-            g_var['img_fef25_75_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
-            g_var['img_fef25_75_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
-            g_var['img_fef25_75_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
-
-            i += 1
-            g_var['img_pef_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
-            g_var['img_pef_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
-            g_var['img_pef_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
-            g_var['img_pef_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
-            g_var['img_pef_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
-            g_var['img_pef_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
-            g_var['img_pef_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
-            g_var['img_pef_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
-
-            i += 1
-            g_var['img_peft_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
-            g_var['img_peft_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
-            g_var['img_peft_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
-            g_var['img_peft_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
-            g_var['img_peft_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
-            g_var['img_peft_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
-            g_var['img_peft_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
-            g_var['img_peft_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
-
-            i += 1
-            g_var['img_fet100_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
-            g_var['img_fet100_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
-            g_var['img_fet100_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
-            g_var['img_fet100_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
-            g_var['img_fet100_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
-            g_var['img_fet100_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
-            g_var['img_fet100_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
-            g_var['img_fet100_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
-
-            i += 1
-            g_var['img_fivc_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
-            g_var['img_fivc_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
-            g_var['img_fivc_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
-            g_var['img_fivc_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
-            g_var['img_fivc_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
-            g_var['img_fivc_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
-            g_var['img_fivc_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
-            g_var['img_fivc_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
-
-            i += 1
-            g_var['img_volextrap_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
-            g_var['img_volextrap_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
-            g_var['img_volextrap_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
-            g_var['img_volextrap_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
-            g_var['img_volextrap_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
-            g_var['img_volextrap_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
-            g_var['img_volextrap_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
-            g_var['img_volextrap_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
-
-            i += 1
-            g_var['img_fvlecode_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
-            g_var['img_fvlecode_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
-            g_var['img_fvlecode_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
-            g_var['img_fvlecode_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
-            g_var['img_fvlecode_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
-            g_var['img_fvlecode_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
-            g_var['img_fvlecode_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
-            g_var['img_fvlecode_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
-            # all trials chart end
-
-            type07_img_cnt += 1
-            pass
-
-        elif title_res[8] == 'Lung':
-            print('type08')
-            g_var['img_type'] = 'type08'
-            table = get_table(chart_image, cur_before_image_file_name, header_type08, 215, 390)
-            arr = table_to_arr(table, cur_before_image_file_name)
-
-            i = 0
-            g_var['img_tlc_ref'] = arr[i][0]
-            g_var['img_tlc_pre'] = arr[i][1]
-            g_var['img_tlc_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_vc_ref'] = arr[i][0]
-            g_var['img_vc_pre'] = arr[i][1]
-            g_var['img_vc_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_ic_ref'] = arr[i][0]
-            g_var['img_ic_pre'] = arr[i][1]
-            g_var['img_ic_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_frcpl_ref'] = arr[i][0]
-            g_var['img_frcpl_pre'] = arr[i][1]
-            g_var['img_frcpl_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_erv_ref'] = arr[i][0]
-            g_var['img_erv_pre'] = arr[i][1]
-            g_var['img_erv_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_rv_ref'] = arr[i][0]
-            g_var['img_rv_pre'] = arr[i][1]
-            g_var['img_rv_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_rvdtlc_ref'] = arr[i][0]
-            g_var['img_rvdtlc_pre'] = arr[i][1]
-
-            i += 1
-            g_var['img_vtg_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_vt_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_rawinsp_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_rawexp_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_raw_ref'] = arr[i][0]
-            g_var['img_raw_pre'] = arr[i][1]
-            g_var['img_raw_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_gaw_ref'] = arr[i][0]
-            g_var['img_gaw_pre'] = arr[i][1]
-            g_var['img_gaw_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_sraw_ref'] = arr[i][0]
-            g_var['img_sraw_pre'] = arr[i][1]
-            g_var['img_sraw_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_sgaw_ref'] = arr[i][0]
-            g_var['img_sgaw_pre'] = arr[i][1]
-            g_var['img_sgaw_pref_pre'] = arr[i][2]
-
-            i += 1
-            g_var['img_rawvtg_pre'] = arr[i][0]
-
-            i += 1
-            g_var['img_rawf_pre'] = arr[i][0]
-            
-            for ar in arr:
-                for ns in ar:
-                    print(ns)
-                print()
-            type08_img_cnt += 1
-            pass
-
         else:
-            g_var['img_type'] = 'typeUK'
-            typeUK_img_cnt += 1
-            pass
-            
-        for f in fs:
-            print(f.result())
-        
-        q.put(['END', True])
-        while True:
-            q_val = q.get()
-            if q_val[0] == 'END':
-                break
-            g_var[q_val[0]] = q_val[1]
-        
-        # create new directory
-        if os.path.exists (g_var['img_type']) == 0:
-            os.mkdir(g_var['img_type'])
+            g_var['img_volextrap_post'] = arr[i][0]
 
-        # add data into OOMII_DB
-        write_g_var_to_excel(ws, wb)
+        i += 1
+        g_var['img_fvlecode_pre'] = arr[i][0]
+        g_var['img_fvlecode_post'] = arr[i][1]
+        # best data chart end
+
+        # all trials chart start
+        table = get_table(chart_image, cur_before_image_file_name, header_type07_2, 400, 190)
+        arr = table_to_arr(table, cur_before_image_file_name)
+
+
+        i = 0
+        g_var['img_fvc_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
+        g_var['img_fvc_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
+        g_var['img_fvc_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
+        g_var['img_fvc_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
+        g_var['img_fvc_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
+        g_var['img_fvc_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
+        g_var['img_fvc_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
+        g_var['img_fvc_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
+
+        i += 1
+        g_var['img_fev1_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
+        g_var['img_fev1_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
+        g_var['img_fev1_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
+        g_var['img_fev1_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
+        g_var['img_fev1_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
+        g_var['img_fev1_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
+        g_var['img_fev1_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
+        g_var['img_fev1_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
+
+        i += 1
+        g_var['img_fev1dfvc_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
+        g_var['img_fev1dfvc_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
+        g_var['img_fev1dfvc_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
+        g_var['img_fev1dfvc_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
+        g_var['img_fev1dfvc_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
+        g_var['img_fev1dfvc_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
+        g_var['img_fev1dfvc_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
+        g_var['img_fev1dfvc_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
+
+        i += 1
+        g_var['img_fef25_75_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
+        g_var['img_fef25_75_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
+        g_var['img_fef25_75_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
+        g_var['img_fef25_75_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
+        g_var['img_fef25_75_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
+        g_var['img_fef25_75_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
+        g_var['img_fef25_75_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
+        g_var['img_fef25_75_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
+
+        i += 1
+        g_var['img_pef_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
+        g_var['img_pef_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
+        g_var['img_pef_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
+        g_var['img_pef_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
+        g_var['img_pef_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
+        g_var['img_pef_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
+        g_var['img_pef_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
+        g_var['img_pef_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
+
+        i += 1
+        g_var['img_peft_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
+        g_var['img_peft_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
+        g_var['img_peft_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
+        g_var['img_peft_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
+        g_var['img_peft_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
+        g_var['img_peft_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
+        g_var['img_peft_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
+        g_var['img_peft_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
+
+        i += 1
+        g_var['img_fet100_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
+        g_var['img_fet100_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
+        g_var['img_fet100_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
+        g_var['img_fet100_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
+        g_var['img_fet100_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
+        g_var['img_fet100_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
+        g_var['img_fet100_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
+        g_var['img_fet100_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
+
+        i += 1
+        g_var['img_fivc_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
+        g_var['img_fivc_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
+        g_var['img_fivc_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
+        g_var['img_fivc_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
+        g_var['img_fivc_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
+        g_var['img_fivc_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
+        g_var['img_fivc_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
+        g_var['img_fivc_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
+
+        i += 1
+        g_var['img_volextrap_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
+        g_var['img_volextrap_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
+        g_var['img_volextrap_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
+        g_var['img_volextrap_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
+        g_var['img_volextrap_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
+        g_var['img_volextrap_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
+        g_var['img_volextrap_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
+        g_var['img_volextrap_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
+
+        i += 1
+        g_var['img_fvlecode_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
+        g_var['img_fvlecode_tri2'] = len(arr[i]) > 1 and arr[i][1] or ''
+        g_var['img_fvlecode_tri3'] = len(arr[i]) > 2 and arr[i][2] or ''
+        g_var['img_fvlecode_tri4'] = len(arr[i]) > 3 and arr[i][3] or ''
+        g_var['img_fvlecode_tri5'] = len(arr[i]) > 4 and arr[i][4] or ''
+        g_var['img_fvlecode_tri6'] = len(arr[i]) > 5 and arr[i][5] or ''
+        g_var['img_fvlecode_tri7'] = len(arr[i]) > 6 and arr[i][6] or ''
+        g_var['img_fvlecode_tri8'] = len(arr[i]) > 7 and arr[i][7] or ''
+        # all trials chart end
+
+        type07_img_cnt += 1
+        pass
+
+    elif ocr_for_title_searching(chart_image[266:303, 3:44]) == 'Lung':
+        g_var['img_type'] = 'type08'
+        table = get_table(chart_image, cur_before_image_file_name, header_type08, 215, 390)
+        arr = table_to_arr(table, cur_before_image_file_name)
+
+        i = 0
+        g_var['img_tlc_ref'] = arr[i][0]
+        g_var['img_tlc_pre'] = arr[i][1]
+        g_var['img_tlc_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_vc_ref'] = arr[i][0]
+        g_var['img_vc_pre'] = arr[i][1]
+        g_var['img_vc_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_ic_ref'] = arr[i][0]
+        g_var['img_ic_pre'] = arr[i][1]
+        g_var['img_ic_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_frcpl_ref'] = arr[i][0]
+        g_var['img_frcpl_pre'] = arr[i][1]
+        g_var['img_frcpl_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_erv_ref'] = arr[i][0]
+        g_var['img_erv_pre'] = arr[i][1]
+        g_var['img_erv_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_rv_ref'] = arr[i][0]
+        g_var['img_rv_pre'] = arr[i][1]
+        g_var['img_rv_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_rvdtlc_ref'] = arr[i][0]
+        g_var['img_rvdtlc_pre'] = arr[i][1]
+
+        i += 1
+        g_var['img_vtg_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_vt_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_rawinsp_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_rawexp_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_raw_ref'] = arr[i][0]
+        g_var['img_raw_pre'] = arr[i][1]
+        g_var['img_raw_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_gaw_ref'] = arr[i][0]
+        g_var['img_gaw_pre'] = arr[i][1]
+        g_var['img_gaw_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_sraw_ref'] = arr[i][0]
+        g_var['img_sraw_pre'] = arr[i][1]
+        g_var['img_sraw_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_sgaw_ref'] = arr[i][0]
+        g_var['img_sgaw_pre'] = arr[i][1]
+        g_var['img_sgaw_pref_pre'] = arr[i][2]
+
+        i += 1
+        g_var['img_rawvtg_pre'] = arr[i][0]
+
+        i += 1
+        g_var['img_rawf_pre'] = arr[i][0]
         
-        # copy image to sorted dir
-        cv2.imwrite(g_var['img_type'] + "/" + g_var['img_type'] + "_" + cur_before_image_file_name, chart_image)
+        # for ar in arr:
+        #     for ns in ar:
+        #         print(ns)
+        #     print()
+        type08_img_cnt += 1
+        pass
+
+    else:
+        g_var['img_type'] = 'typeUK'
+        typeUK_img_cnt += 1
+        pass
+            
+    for f in fs:
+        f.result()
+    
+    q.put(['END', True])
+    while True:
+        q_val = q.get()
+        if q_val[0] == 'END':
+            break
+        g_var[q_val[0]] = q_val[1]
+    
+    # copy image to sorted dir
+    before_image_files_counter += 1
+    # cv2.imwrite(g_var['img_type'] + "/" + g_var['img_type'] + "_" + cur_before_image_file_name, chart_image)
+
+    return [cur_before_image_file_path, g_var, arr, cur_before_image_file_name, chart_image]
+
+    
+def process():
+    print('\nplease wait for initializing...')
+    before_image_file_paths = glob.glob(ori_path + "/*.jpg")
+    ws, wb = init_worksheet()
+    pfs = []
+    for cur_before_image_file_path in before_image_file_paths:
+        f_result = process_chart_and_get_v_gar(cur_before_image_file_path)
+        img_path = f_result[0]
+        g_var = f_result[1]
+        arr = f_result[2]
+        img_name = f_result[3]
+        img = f_result[4]
+
+        for ar in arr:
+            for ns in ar:
+                print(ns)
+            print()
+        print(img_path + " -> " + g_var['img_type'])
+        print()
+
+        # create new directory
+        if os.path.exists (new_path + '/' + g_var['img_type']) == 0:
+            os.mkdir(new_path + '/' + g_var['img_type'])
+
+        cv2.imwrite(new_path + '/' + g_var['img_type'] + "/" + g_var['img_type'] + "_" + img_name, img)
+        # add data into OOMII_DB
+        append_g_var_to_excel(ws, wb, g_var)
+
+        # pfs.append(pool.submit(process_chart_and_get_v_gar, cur_before_image_file_path))
+
 
     print()
     print('Total: ' + str(before_image_files_counter))
@@ -1084,7 +1093,7 @@ def process(before_path):
 
 def init_worksheet():
     # create new excel file 
-    if os.path.isfile('OOMII.xlsx') == 0:
+    if os.path.isfile(new_path + '/OOMII.xlsx') == 0:
         wb = openpyxl.Workbook()
         ws = wb.active
         ws = wb.create_sheet("OOMII_DB", 0)
@@ -1496,14 +1505,15 @@ def init_worksheet():
         ws ["OP1"] = "sgaw_pref_pre"
         ws ["OQ1"] = "rawvtg_pre"
         ws ["OR1"] = "rawf_pre"
-        wb.save("OOMII.xlsx")
+        wb.save(new_path + "/OOMII.xlsx")
     else:
-        wb = openpyxl.load_workbook('OOMII.xlsx')
+        wb = openpyxl.load_workbook(new_path + '/OOMII.xlsx')
         ws = wb["OOMII_DB"]
     return ws, wb
 
 
-def reset_g_var() :
+def new_g_var() :
+    g_var = {}
     g_var['img_type'] = ""
     g_var['img_pid'] = ""
     g_var['img_date'] = ""
@@ -1912,10 +1922,10 @@ def reset_g_var() :
     g_var['img_sgaw_pref_pre'] = ""
     g_var['img_rawvtg_pre'] = ""
     g_var['img_rawf_pre'] = ""
-    return
+    return g_var
 
 
-def write_g_var_to_excel(ws, wb):
+def append_g_var_to_excel(ws, wb, g_var):
     ws_cnt = str(ws.max_row + 1)
     print ("ws_cnt: " + ws_cnt)
     ws ["A" + ws_cnt] = g_var['img_type']
@@ -2326,23 +2336,74 @@ def write_g_var_to_excel(ws, wb):
     ws ["OP" + ws_cnt] = g_var['img_sgaw_pref_pre']
     ws ["OQ" + ws_cnt] = g_var['img_rawvtg_pre']
     ws ["OR" + ws_cnt] = g_var['img_rawf_pre']
-    wb.save("OOMII.xlsx")
+    wb.save(new_path + "/OOMII.xlsx")
     return
 
 
+class MyApp(QWidget):
+    def __init__(self):
+        global ori_path, new_path
+        super().__init__()
+        self.setGeometry(800, 200, 300, 300)
+        self.setWindowTitle("OOMII :)")
+        
+        self.pushButton1 = QPushButton("Set Original Image Directory")
+        self.pushButton1.clicked.connect(self.set_ori_image_path_callback)
+        self.label1 = QLabel()
+        
+        self.pushButton2 = QPushButton("Set New Image Directory")
+        self.pushButton2.clicked.connect(self.set_new_image_path_callback)
+        self.label2 = QLabel()
+        
+        self.pushButton3 = QPushButton("Classify PFT Sheets")
+        self.pushButton3.clicked.connect(self.classify_callback)
+        self.label3 = QLabel()
+
+        layout = QVBoxLayout()
+        
+        layout.addWidget(self.pushButton1)
+        layout.addWidget(self.label1)
+        
+        layout.addWidget(self.pushButton2)
+        layout.addWidget(self.label2)
+        
+        layout.addWidget(self.pushButton3)
+        layout.addWidget(self.label3)
+
+        self.setLayout(layout)
+
+                
+    def set_ori_image_path_callback(self):
+        global ori_path
+        ori_path = QFileDialog.getExistingDirectory(self)
+        self.label1.setText(ori_path)
+        
+        
+    def set_new_image_path_callback(self):
+        global new_path
+        new_path = QFileDialog.getExistingDirectory(self)
+        self.label2.setText(new_path)
+
+
+    def classify_callback(self):
+        process()
+        self.label3.setText("Total: " + str(before_image_files_counter) + "\n\n"
+                          + "type01: " + str(type01_img_cnt) + "\n"
+                          + "type02: " + str(type02_img_cnt) + "\n"
+                          + "type03: " + str(type03_img_cnt) + "\n"
+                          + "type04: " + str(type04_img_cnt) + "\n"
+                          + "type05: " + str(type05_img_cnt) + "\n"
+                          + "type06: " + str(type06_img_cnt) + "\n"
+			              + "type07: " + str(type07_img_cnt) + "\n"
+			              + "type08: " + str(type08_img_cnt) + "\n"
+                          + "typeUK: " + str(typeUK_img_cnt) + "\n")
+
+
 if __name__ == '__main__':
-    # img = cv2.imread('C:/inz/git/ChartClassifierApi/before/sample.jpg')
-    # arr = table_to_arr_2(img, 'asd', 8, 4, '')
-    file = open('result.txt', mode='wt', encoding='utf-8')
-    file.write('0')
-    file.close()
-    if len(sys.argv) > 1:
-        args = []
-        for i in range(1, len(sys.argv)):
-            args.append(sys.argv[i])
-        process(args)
-        file = open('result.txt', mode='wt', encoding='utf-8')
-        file.write('1')
-        file.close()
-    else:
-        print('NEED ARGUMENT FOR IMAGE FILE NAME OR DIR NAME')
+    app = QApplication(sys.argv)
+    ex = MyApp()
+    ex.show()
+    sys.exit(app.exec_())
+
+
+# In[ ]:
