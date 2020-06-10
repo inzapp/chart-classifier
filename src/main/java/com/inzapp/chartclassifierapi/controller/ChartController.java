@@ -45,7 +45,7 @@ public class ChartController {
 		}
 
 		// run python process and wait until end
-		Process p = Runtime.getRuntime().exec(String.format("python ocr.py %s option=%s", path, option));
+		Process p = Runtime.getRuntime().exec(String.format("python ocr.py path=%s option=%s", path, option));
 		p.waitFor();
 		p.destroy();
 
@@ -55,7 +55,7 @@ public class ChartController {
 			map.put("result", "failure");
 		} else {
 			map.put("result", "success");
-			String[] paths = path.split(",");
+			String[] paths = path.split("*");
 			for (String curPath : paths) {
 				Map<String, Object> curResultMap = new HashMap<>();
 				curResultMap.put("progress", this.getProgressFilePathList(curPath, option));
@@ -67,7 +67,7 @@ public class ChartController {
 	}
 
 	private String checkPathIsValid(String path) {
-		String[] paths = path.split(",");
+		String[] paths = path.split("*");
 		for (int i = 0; i < paths.length; ++i) {
 			File pathFile = new File(paths[i]);
 			if (!pathFile.exists()) {
@@ -83,7 +83,7 @@ public class ChartController {
 		if (option.equals("")) {
 			return "success";
 		}
-		String[] options = option.split(",");
+		String[] options = option.split("*");
 		for (int i = 0; i < options.length; ++i) {
 			boolean isAvailable = false;
 			for (int j = 0; j < AVAILABLE_OPTIONS.length; ++j) {
@@ -113,7 +113,7 @@ public class ChartController {
 		String fileName = sp[sp.length - 1];
 		String rawFileName = fileName.split("\\.")[0];
 		List<File> progressFiles = new LinkedList<>();
-		String[] options = option.split(",");
+		String[] options = option.split("*");
 		for (int i = 0; i < options.length; ++i) {
 			progressFiles
 					.add(new File(String.format("progress\\%s_%s_%s.jpg", rawFileName, String.valueOf(i), options[i])));
@@ -136,7 +136,7 @@ public class ChartController {
 		if (ocrResultFile.exists() && ocrResultFile.isFile()) {
 			return this.getFileContent(ocrResultFile.getAbsolutePath());
 		} else {
-			return "error to get file content. file not found - " + ocrResultFileName;
+			return "error to get file content. file not found: " + ocrResultFileName;
 		}
 	}
 

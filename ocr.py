@@ -2372,19 +2372,26 @@ if __name__ == '__main__':
     file.write('0')
     file.close()
     if len(sys.argv) > 1: 
-        args = []
+        paths = []
         for i in range(1, len(sys.argv)):
-            if sys.argv[i].find('option=') > -1:
+            if sys.argv[i].find('path=') > -1:
                 sp = sys.argv[i].split('=')
                 if len(sp) == 2:
-                    option_params = sp[1].split(',')
+                    sp = sp[1].split('*')
+                    for path in sp:
+                        paths.append(path)
+
+            elif sys.argv[i].find('option=') > -1:
+                sp = sys.argv[i].split('=')
+                if len(sp) == 2:
+                    option_params = sp[1].split('*')
                     for option in option_params:
                         options.append(option)
             else:
-                args.append(sys.argv[i])
-        process(args)
+                print('invalid argument: ' + sys.argv[i])
+        process(paths)
         file = open('result.txt', mode='wt', encoding='utf-8')
         file.write('1')
         file.close()
     else:
-        print('NEED ARGUMENT FOR IMAGE FILE NAME OR DIR NAME')
+        print('NEED ARGUMENT FOR IMAGE FILE PATHS OR DIR NAME')
