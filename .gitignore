@@ -1,6 +1,15 @@
 progress/
 result/
 
+type01/
+type02/
+type03/
+type04/
+type05/
+type06/
+type07/
+type08/
+
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
