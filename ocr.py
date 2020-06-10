@@ -2368,8 +2368,6 @@ def append_g_var_to_excel(ws, wb, g_var):
 
 
 if __name__ == '__main__':
-    # img = cv2.imread('C:/inz/git/ChartClassifierApi/before/sample.jpg')
-    # arr = table_to_arr_2(img, 'asd', 8, 4, '')
     file = open('result.txt', mode='wt', encoding='utf-8')
     file.write('0')
     file.close()
