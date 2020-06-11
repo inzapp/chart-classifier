@@ -80,6 +80,34 @@ def get_table(image, file_name, header, table_w, table_h):
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
 
 
+
+
+
+
+
+    proc = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
+    th, proc =  cv2.threshold(proc, 190, 255, cv2.THRESH_BINARY)
+    proc = cv2.bitwise_not(proc)
+    kernel = np.ones((1, 10), np.uint8)
+    proc = cv2.dilate(proc, kernel, iterations=1)
+    contours, hierachy = cv2.findContours(proc, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    table_copy = table.copy()
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        if w < table_w - 10:
+            cv2.rectangle(table_copy, (x, y), (x+w, y+h), (255, 0, 0), 2)
+    
+    cv2.imshow('proc', proc)
+    cv2.imshow('table_copy', table_copy)
+    cv2.waitKey(0)
+
+
+
+
+
+
+
+
     # pre-process image if options exist
     if os.path.exists ('progress') == 0:
         os.mkdir('progress')
