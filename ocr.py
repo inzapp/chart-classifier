@@ -85,17 +85,23 @@ def get_table(image, file_name, header, table_w, table_h):
 
 
 
-    proc = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
+    proc = cv2.resize(table, dsize=(0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
+    proc = cv2.cvtColor(proc, cv2.COLOR_BGR2GRAY)
     th, proc =  cv2.threshold(proc, 190, 255, cv2.THRESH_BINARY)
     proc = cv2.bitwise_not(proc)
-    kernel = np.ones((1, 10), np.uint8)
+    kernel = np.ones((1, 5), np.uint8)
     proc = cv2.dilate(proc, kernel, iterations=1)
     contours, hierachy = cv2.findContours(proc, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     table_copy = table.copy()
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
+        x *= 2
+        y *= 2
+        w *= 2
+        h *= 2
+
         if w < table_w - 10:
-            cv2.rectangle(table_copy, (x, y), (x+w, y+h), (255, 0, 0), 2)
+            cv2.rectangle(table_copy, (x, y), (x + w, y + h), (255, 0, 0), 2)
     
     cv2.imshow('proc', proc)
     cv2.imshow('table_copy', table_copy)
