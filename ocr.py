@@ -71,7 +71,7 @@ def get_max_matched_res(image, template):
     return [max_template_match_img, max_template_match_loc]
 
 
-def process_and_get_arr(image, file_name, header, table_w, table_h):
+def process_and_get_arr(image, file_name, header, table_w, table_h, type07 = False):
     res = get_max_matched_res(image, header)
     img = res[0]
     loc = res[1]
@@ -103,7 +103,7 @@ def process_and_get_arr(image, file_name, header, table_w, table_h):
             arr.append(line_arr)
 
 
-    file_res = []
+    ocr_position_value_res = []
     # detect x, y position using contour
     proc = cv2.resize(table, dsize=(0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
     proc = cv2.cvtColor(proc, cv2.COLOR_BGR2GRAY)
@@ -134,7 +134,7 @@ def process_and_get_arr(image, file_name, header, table_w, table_h):
                 'w': str(w),
                 'h': str(h),
             }
-            file_res.append(json)
+            ocr_position_value_res.append(json)
             i += 1
             # print('' + str(x) + ', ' + str(y) + ', ' + str(w) + ', ' + str(h))
     
@@ -147,12 +147,9 @@ def process_and_get_arr(image, file_name, header, table_w, table_h):
     if os.path.exists ('result') == 0:
         os.mkdir('result')
     sp = file_name.split('.')
-    file = open('result/' + sp[0] + '.txt', mode='wt', encoding='utf-8')
-    # for line in arr:
-    #     for ns in line:
-    #         file.write(ns + ' ')
-    #     file.write('\n')
-    file.write(str(file_res).replace('\'', '\"'))
+    result_file_path = 'result/' + sp[0] + '.txt'
+    file = open(result_file_path, mode='wt', encoding='utf-8')
+    file.write(str(ocr_position_value_res).replace('\'', '\"'))
     file.close()
 
     # pre-process image if options exist
@@ -177,7 +174,7 @@ def process_and_get_arr(image, file_name, header, table_w, table_h):
             print('invert')
         i += 1
         
-    return arr
+    return type07 and arr, ocr_position_value_res, result_file_path or arr
 
 
 def ocr_cell(cell):
@@ -776,7 +773,7 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
     elif ocr_for_title_searching(chart_image[66:99, 538:647]) == 'REPORT':
         g_var['img_type'] = 'type07'
 
-        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type07_1, 400, 188)
+        arr, ocr_position_value_res_1, file_path  = process_and_get_arr(chart_image, cur_before_image_file_name, header_type07_1, 400, 188, True)
 
         # best data chart start
         i = 0
@@ -848,7 +845,13 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
         # best data chart end
 
         # all trials chart start
-        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type07_2, 530, 195)
+        arr, ocr_position_value_res_2, file_path  = process_and_get_arr(chart_image, cur_before_image_file_name, header_type07_2, 530, 195, True)
+        for json in ocr_position_value_res_2:
+            ocr_position_value_res_1.append(json)
+        file = open(file_path, mode='wt', encoding='utf-8')
+        file.write(str(ocr_position_value_res_1).replace('\'', '\"'))
+        file.close()
+
 
         i = 0
         g_var['img_fvc_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
