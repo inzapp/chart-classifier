@@ -10,6 +10,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -78,7 +80,11 @@ public class ChartController {
 			for (String path : paths) {
 				Map<String, Object> curResultMap = new HashMap<>();
 				curResultMap.put("progress", this.getProgressFilePathList(path, options));
-				curResultMap.put("ocrResult", this.getOcrResult(path));
+				try {
+					curResultMap.put("ocrResult", this.getOcrResult(path));	
+				} catch(Exception e) {
+					curResultMap.put("ocrResult", e.getMessage());
+				}
 				map.put(path, curResultMap);
 			}
 		}
@@ -160,8 +166,7 @@ public class ChartController {
 		String rawFileName = fileName.split("\\.")[0];
 		List<File> progressFiles = new LinkedList<>();
 		for (int i = 0; i < options.size(); ++i) {
-			progressFiles.add(
-					new File(String.format("progress\\%s_%s_%s.jpg", rawFileName, String.valueOf(i), options.get(i))));
+			progressFiles.add(new File(String.format("progress\\%s_%s_%s.jpg", rawFileName, String.valueOf(i), options.get(i))));
 		}
 		List<String> progressFilePaths = new ArrayList<>();
 		for (File progressFile : progressFiles) {
@@ -172,16 +177,30 @@ public class ChartController {
 		return progressFilePaths;
 	}
 
-	private String getOcrResult(String path) throws Exception {
+	private List<Map<String, Object>> getOcrResult(String path) throws Exception {
 		String[] sp = path.split("\\\\");
 		String fileNameWithExtension = sp[sp.length - 1];
 		String rawFileName = fileNameWithExtension.split("\\.")[0];
 		String ocrResultFileName = String.format("result\\%s.txt", rawFileName);
 		File ocrResultFile = new File(ocrResultFileName);
 		if (ocrResultFile.exists() && ocrResultFile.isFile()) {
-			return this.getFileContent(ocrResultFile.getAbsolutePath());
+			String jsonString = this.getFileContent(ocrResultFile.getAbsolutePath());
+			JSONArray jsonArr = new JSONArray(jsonString);
+			System.out.println(jsonArr);
+			List<Map<String, Object>> list = new ArrayList<>();
+			for(int i=0; i<jsonArr.length(); ++i) {
+				JSONObject json = jsonArr.getJSONObject(i);
+				Map<String, Object> map = new HashMap<>();
+				map.put("val", json.get("val"));
+				map.put("x", json.get("x"));
+				map.put("y", json.get("y"));
+				map.put("w", json.get("w"));
+				map.put("h", json.get("h"));
+				list.add(map);
+			}
+			return list;
 		} else {
-			return "error to get file content. file not found: " + ocrResultFileName;
+			throw new Exception("error to get file content. file not found: " + ocrResultFileName);
 		}
 	}
 
