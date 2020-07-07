@@ -103,19 +103,35 @@ def process_and_get_arr(image, file_name, header, table_w, table_h, type07 = Fal
             arr.append(line_arr)
 
 
-    ocr_position_value_res = []
     # detect x, y position using contour
+    ocr_position_value_res = []
     proc = cv2.resize(table, dsize=(0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
     proc = cv2.cvtColor(proc, cv2.COLOR_BGR2GRAY)
     th, proc =  cv2.threshold(proc, 190, 255, cv2.THRESH_BINARY)
     proc = cv2.bitwise_not(proc)
     kernel = np.ones((1, 5), np.uint8)
     proc = cv2.dilate(proc, kernel, iterations=1)
+    
     contours, hierachy = cv2.findContours(proc, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     table_copy = table.copy()
     table_h, table_w, table_ch = table_copy.shape
-    i = 0
+
+    # sort contours
+    sotred_contour_jsons = []
     for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        sotred_contour_jsons.append({
+            'x': x,
+            'y': y,
+            'contour': contour
+        })
+
+    sotred_contour_jsons.sort(key=lambda k: k['x'])
+    sotred_contour_jsons.sort(key=lambda k: k['y'])
+
+    i = 0
+    for json in sotred_contour_jsons:
+        contour = json['contour']
         x, y, w, h = cv2.boundingRect(contour)
         x *= 2
         y *= 2
@@ -134,14 +150,17 @@ def process_and_get_arr(image, file_name, header, table_w, table_h, type07 = Fal
                 'w': str(w),
                 'h': str(h),
             }
+            print(json)
             ocr_position_value_res.append(json)
+            cv2.imshow('table_copy', table_copy)
+            cv2.waitKey(0)
             i += 1
             # print('' + str(x) + ', ' + str(y) + ', ' + str(w) + ', ' + str(h))
     
-    # cv2.imshow('proc', proc)
-    # cv2.imshow('table_copy', table_copy)
-    # cv2.imshow('image', image)
-    # cv2.waitKey(0)
+    cv2.imshow('proc', proc)
+    cv2.imshow('table_copy', table_copy)
+    cv2.imshow('image', image)
+    cv2.waitKey(0)
             
     # save result to file
     if os.path.exists ('result') == 0:
@@ -171,7 +190,6 @@ def process_and_get_arr(image, file_name, header, table_w, table_h, type07 = Fal
         elif option == 'invert':
             tmp_invert = cv2.bitwise_not(table)
             cv2.imwrite('%s_%s_invert.%s' % (sp[0], i, sp[1]), tmp_invert)
-            print('invert')
         i += 1
     
 
