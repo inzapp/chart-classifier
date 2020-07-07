@@ -79,13 +79,13 @@ def process_and_get_arr(image, file_name, header, table_w, table_h):
     table_x = loc[0]
     table_y = loc[1] + header_height
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
-    table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    zoomed_table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
 
     # ocr
-    ocr_res = pytesseract.image_to_string(table, config='-psm 6 digits') # ver 3
-    # ocr_res = pytesseract.image_to_string(table, config='--psm 6 --oem 0') # ver 4
-    # ocr_res = pytesseract.image_to_string(table, config='--psm 6 tessedit_char_whitelist=0123456789.-')
-    # ocr_res = pytesseract.image_to_string(table, config='--psm 6 tessedit_char_whitelist=0123456789.-' + white_list)
+    ocr_res = pytesseract.image_to_string(zoomed_table, config='-psm 6 digits') # ver 3
+    # ocr_res = pytesseract.image_to_string(zoomed_table, config='--psm 6 --oem 0') # ver 4
+    # ocr_res = pytesseract.image_to_string(zoomed_table, config='--psm 6 tessedit_char_whitelist=0123456789.-')
+    # ocr_res = pytesseract.image_to_string(zoomed_table, config='--psm 6 tessedit_char_whitelist=0123456789.-' + white_list)
 
     # split ocr result by line & space
     sp = ocr_res.split('\n')
@@ -105,7 +105,7 @@ def process_and_get_arr(image, file_name, header, table_w, table_h):
 
     file_res = []
     # detect x, y position using contour
-    proc = cv2.resize(table, dsize=(0, 0), fx=0.25, fy=0.25, interpolation=cv2.INTER_CUBIC)
+    proc = cv2.resize(table, dsize=(0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
     proc = cv2.cvtColor(proc, cv2.COLOR_BGR2GRAY)
     th, proc =  cv2.threshold(proc, 190, 255, cv2.THRESH_BINARY)
     proc = cv2.bitwise_not(proc)
@@ -117,19 +117,22 @@ def process_and_get_arr(image, file_name, header, table_w, table_h):
     i = 0
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
-        x *= 4
-        y *= 4
-        w *= 4
-        h *= 4
+        x *= 2
+        y *= 2
+        w *= 2
+        h *= 2
 
         if w < table_w - 10:
             cv2.rectangle(table_copy, (x, y), (x + w, y + h), (0, 0, 255), 2)
+            x += table_x
+            y += table_y
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
             json = {
-                "val": len(arr_1d) > i and arr_1d[i] or '',
-                "x": str(x),
-                "y": str(y),
-                "w": str(w),
-                "h": str(h),
+                'val': len(arr_1d) > i and arr_1d[i] or '',
+                'x': str(x),
+                'y': str(y),
+                'w': str(w),
+                'h': str(h),
             }
             file_res.append(json)
             i += 1
@@ -137,6 +140,7 @@ def process_and_get_arr(image, file_name, header, table_w, table_h):
     
     cv2.imshow('proc', proc)
     cv2.imshow('table_copy', table_copy)
+    cv2.imshow('image', image)
     cv2.waitKey(0)
             
     # save result to file
