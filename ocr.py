@@ -126,8 +126,8 @@ def process_and_get_arr(image, file_name, header, table_w, table_h, type07 = Fal
             'contour': contour
         })
 
-    sotred_contour_jsons.sort(key=lambda k: k['x'])
-    sotred_contour_jsons.sort(key=lambda k: k['y'])
+    sotred_contour_jsons.sort(key=lambda k: int(k['x']))
+    sotred_contour_jsons.sort(key=lambda k: int(k['y']))
 
     i = 0
     for json in sotred_contour_jsons:
