@@ -64,6 +64,11 @@ public class ChartController {
 		process.waitFor();
 		process.destroy();
 
+		// replace regex
+		for (int i = 0; i < paths.size(); ++i) {
+			paths.set(i, paths.get(i).replaceAll("/", "\\\\"));
+		}
+
 		// return result
 		String result = this.getFileContent("result.txt");
 		if (result.startsWith("0")) {
