@@ -13,8 +13,8 @@ from threading import Thread
 from queue import Queue
 from concurrent.futures import ThreadPoolExecutor
 
-pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR/tesseract.exe'
-# pytesseract.pytesseract.tesseract_cmd = 'E:/Tesseract-OCR-4.0/tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = 'C:/Tesseract-OCR/tesseract.exe'
+# pytesseract.pytesseract.tesseract_cmd = 'C:/Tesseract-OCR-4.0/tesseract.exe'
 pool = ThreadPoolExecutor(8)
 pool2 = ThreadPoolExecutor(3)
 options = []
