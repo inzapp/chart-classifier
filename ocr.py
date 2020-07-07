@@ -12,6 +12,7 @@ import openpyxl
 from threading import Thread
 from queue import Queue
 from concurrent.futures import ThreadPoolExecutor
+from time import sleep
 
 pytesseract.pytesseract.tesseract_cmd = 'C:/Tesseract-OCR/tesseract.exe'
 # pytesseract.pytesseract.tesseract_cmd = 'C:/Tesseract-OCR-4.0/tesseract.exe'
@@ -70,19 +71,16 @@ def get_max_matched_res(image, template):
     return [max_template_match_img, max_template_match_loc]
 
 
-def get_table(image, file_name, header, table_w, table_h):
+def process_and_get_arr(image, file_name, header, table_w, table_h):
     res = get_max_matched_res(image, header)
     img = res[0]
     loc = res[1]
-    h, w, ch = header.shape
+    header_height, header_width, header_channel = header.shape
     table_x = loc[0]
-    table_y = loc[1] + h
+    table_y = loc[1] + header_height
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
     table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    return table
 
-
-def table_to_arr(table, file_name, white_list = ''):
     # ocr
     ocr_res = pytesseract.image_to_string(table, config='-psm 6 digits') # ver 3
     # ocr_res = pytesseract.image_to_string(table, config='--psm 6 --oem 0') # ver 4
@@ -92,6 +90,7 @@ def table_to_arr(table, file_name, white_list = ''):
     # split ocr result by line & space
     sp = ocr_res.split('\n')
     arr = []
+    arr_1d = []
     for s in sp:
         if len(s.strip()) != 0:
             sp = s.split(' ')
@@ -100,19 +99,11 @@ def table_to_arr(table, file_name, white_list = ''):
                 if ns.startswith('.'):
                     ns = ns.replace('.', '-', 1)
                 line_arr.append(ns)
+                arr_1d.append(ns)
             arr.append(line_arr)
-            
-    # save result to file
-    if os.path.exists ('result') == 0:
-        os.mkdir('result')
-    sp = file_name.split('.')
-    file = open('result/' + sp[0] + '.txt', mode='wt', encoding='utf-8')
-    for line in arr:
-        for ns in line:
-            file.write(ns + ' ')
-        file.write('\n')
-    file.close()
 
+
+    file_res = []
     # detect x, y position using contour
     proc = cv2.resize(table, dsize=(0, 0), fx=0.25, fy=0.25, interpolation=cv2.INTER_CUBIC)
     proc = cv2.cvtColor(proc, cv2.COLOR_BGR2GRAY)
@@ -123,6 +114,7 @@ def table_to_arr(table, file_name, white_list = ''):
     contours, hierachy = cv2.findContours(proc, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     table_copy = table.copy()
     table_h, table_w, table_ch = table_copy.shape
+    i = 0
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
         x *= 4
@@ -132,11 +124,32 @@ def table_to_arr(table, file_name, white_list = ''):
 
         if w < table_w - 10:
             cv2.rectangle(table_copy, (x, y), (x + w, y + h), (0, 0, 255), 2)
-            print('' + str(x) + ', ' + str(y) + ', ' + str(w) + ', ' + str(h))
+            json = {
+                "val": len(arr_1d) > i and arr_1d[i] or '',
+                "x": str(x),
+                "y": str(y),
+                "w": str(w),
+                "h": str(h),
+            }
+            file_res.append(json)
+            i += 1
+            # print('' + str(x) + ', ' + str(y) + ', ' + str(w) + ', ' + str(h))
     
     cv2.imshow('proc', proc)
     cv2.imshow('table_copy', table_copy)
     cv2.waitKey(0)
+            
+    # save result to file
+    if os.path.exists ('result') == 0:
+        os.mkdir('result')
+    sp = file_name.split('.')
+    file = open('result/' + sp[0] + '.txt', mode='wt', encoding='utf-8')
+    # for line in arr:
+    #     for ns in line:
+    #         file.write(ns + ' ')
+    #     file.write('\n')
+    file.write(str(file_res).replace('\'', '\"'))
+    file.close()
 
     # pre-process image if options exist
     if os.path.exists ('progress') == 0:
@@ -146,17 +159,20 @@ def table_to_arr(table, file_name, white_list = ''):
     i = 0
     for option in options:
         if option == 'grayscale':
-            table = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
-            cv2.imwrite('%s_%s_grayscale.%s' % (sp[0], i, sp[1]), table)
+            tmp_gray = cv2.cvtColor(table, cv2.COLOR_BGR2GRAY)
+            cv2.imwrite('%s_%s_grayscale.%s' % (sp[0], i, sp[1]), tmp_gray)
         elif option == 'threshold':
-            tmp, table = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
-            cv2.imwrite('%s_%s_threshold.%s' % (sp[0], i, sp[1]), table)
+            tmp, tmp_binary = cv2.threshold(table, 190, 255, cv2.THRESH_BINARY)
+            cv2.imwrite('%s_%s_threshold.%s' % (sp[0], i, sp[1]), tmp_binary)
         elif option == 'blur':
-            table = cv2.blur(table, (2, 2))
-            cv2.imwrite('%s_%s_blur.%s' % (sp[0], i, sp[1]), table)
+            tmp_blur = cv2.blur(table, (2, 2))
+            cv2.imwrite('%s_%s_blur.%s' % (sp[0], i, sp[1]), tmp_blur)
         elif option == 'invert':
+            tmp_invert = cv2.bitwise_not(table)
+            cv2.imwrite('%s_%s_invert.%s' % (sp[0], i, sp[1]), tmp_invert)
             print('invert')
         i += 1
+        
     return arr
 
 
@@ -180,6 +196,7 @@ def ocr_for_title_searching(submat):
 
 
 def process_chart_and_get_v_gar(cur_before_image_file_path):
+    sleep(0)
     global before_image_files_counter
     global type01_img_cnt
     global type02_img_cnt
@@ -202,8 +219,7 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
     #[s_y:e_y, s_x:e_x]
     if ocr_for_title_searching(chart_image[167:223, 239:445]) == 'Methacholine':
         g_var['img_type'] = 'type01'
-        table = get_table(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
-        arr = table_to_arr(table, cur_before_image_file_name)
+        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
         
         # fvc dose
         for i in range(0, 5 + 1):
@@ -284,8 +300,7 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
 
     elif ocr_for_title_searching(chart_image[177:217, 156:247]) == 'aridol':
         g_var['img_type'] = 'type02'
-        table = get_table(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
-        arr = table_to_arr(table, cur_before_image_file_name)
+        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type01_type02, 790, 360)
 
         # fvc dose
         for i in range(0, 8 + 1):
@@ -366,8 +381,7 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
 
     elif ocr_for_title_searching(chart_image[360:390, 38:111]) == 'Diffusing':
         g_var['img_type'] = 'type03'
-        table = get_table(chart_image, cur_before_image_file_name, header_type03, 220, 140)
-        arr = table_to_arr(table, cur_before_image_file_name)
+        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type03, 220, 140)
 
         g_var['img_dlco_ref'] = arr[0][0]
         g_var['img_dlco_pre'] = arr[0][1]
@@ -385,18 +399,13 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
         g_var['img_ivc_pre'] = arr[5][0]
         g_var['img_dlcoecode_pre'] = arr[6][0]
 
-        # for ar in arr:
-        #     for ns in ar:
-        #         print(ns)
-        #     print()
         type03_img_cnt += 1
         pass
 
     elif ocr_for_title_searching(chart_image[266:295, 1:89]) == 'Spirometry':
         g_var['img_type'] = 'type04'
 
-        table = get_table(chart_image, cur_before_image_file_name, header_type04, 430, 900)
-        arr = table_to_arr(table, cur_before_image_file_name)
+        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type04, 430, 900)
 
         # spirometry section start
         g_var['img_fvc_ref'] = arr[0][0]
@@ -587,8 +596,7 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
 
     elif ocr_for_title_searching(chart_image[6:40, 245:367]) == 'CATHOLIC' and ocr_for_title_searching(chart_image[323:596, 657:914]) == '':
         g_var['img_type'] = 'type05'
-        table = get_table(chart_image, cur_before_image_file_name, header_type05, 330, 300)
-        arr = table_to_arr(table, cur_before_image_file_name, '<')
+        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type05, 330, 300)
         
         i = 0
         g_var['img_fvc_pred'] = arr[i][0]
@@ -658,8 +666,7 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
     elif ocr_for_title_searching(chart_image[6:40, 245:367]) == 'CATHOLIC':
         g_var['img_type'] = 'type06'
 
-        table = get_table(chart_image, cur_before_image_file_name, header_type06, 610, 310)
-        arr = table_to_arr(table, cur_before_image_file_name, '<')
+        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type06, 610, 310)
 
         i = 0
         g_var['img_fvc_pred'] = arr[i][0]
@@ -765,8 +772,7 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
     elif ocr_for_title_searching(chart_image[66:99, 538:647]) == 'REPORT':
         g_var['img_type'] = 'type07'
 
-        table = get_table(chart_image, cur_before_image_file_name, header_type07_1, 400, 185)
-        arr = table_to_arr(table, cur_before_image_file_name)
+        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type07_1, 400, 185)
 
         # best data chart start
         i = 0
@@ -838,9 +844,7 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
         # best data chart end
 
         # all trials chart start
-        table = get_table(chart_image, cur_before_image_file_name, header_type07_2, 400, 190)
-        arr = table_to_arr(table, cur_before_image_file_name)
-
+        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type07_2, 400, 190)
 
         i = 0
         g_var['img_fvc_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
@@ -948,8 +952,7 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
 
     elif ocr_for_title_searching(chart_image[266:303, 3:44]) == 'Lung':
         g_var['img_type'] = 'type08'
-        table = get_table(chart_image, cur_before_image_file_name, header_type08, 215, 390)
-        arr = table_to_arr(table, cur_before_image_file_name)
+        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type08, 215, 390)
 
         i = 0
         g_var['img_tlc_ref'] = arr[i][0]
