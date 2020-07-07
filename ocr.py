@@ -776,7 +776,7 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
     elif ocr_for_title_searching(chart_image[66:99, 538:647]) == 'REPORT':
         g_var['img_type'] = 'type07'
 
-        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type07_1, 400, 185)
+        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type07_1, 400, 188)
 
         # best data chart start
         i = 0
@@ -848,7 +848,7 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
         # best data chart end
 
         # all trials chart start
-        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type07_2, 400, 190)
+        arr = process_and_get_arr(chart_image, cur_before_image_file_name, header_type07_2, 530, 195)
 
         i = 0
         g_var['img_fvc_tri1'] = len(arr[i]) > 0 and arr[i][0] or ''
