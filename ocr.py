@@ -138,10 +138,10 @@ def process_and_get_arr(image, file_name, header, table_w, table_h, type07 = Fal
             i += 1
             # print('' + str(x) + ', ' + str(y) + ', ' + str(w) + ', ' + str(h))
     
-    cv2.imshow('proc', proc)
-    cv2.imshow('table_copy', table_copy)
-    cv2.imshow('image', image)
-    cv2.waitKey(0)
+    # cv2.imshow('proc', proc)
+    # cv2.imshow('table_copy', table_copy)
+    # cv2.imshow('image', image)
+    # cv2.waitKey(0)
             
     # save result to file
     if os.path.exists ('result') == 0:
@@ -173,8 +173,9 @@ def process_and_get_arr(image, file_name, header, table_w, table_h, type07 = Fal
             cv2.imwrite('%s_%s_invert.%s' % (sp[0], i, sp[1]), tmp_invert)
             print('invert')
         i += 1
-        
-    return type07 and arr, ocr_position_value_res, result_file_path or arr
+    
+
+    return type07 and (arr, ocr_position_value_res, result_file_path) or arr
 
 
 def ocr_cell(cell):

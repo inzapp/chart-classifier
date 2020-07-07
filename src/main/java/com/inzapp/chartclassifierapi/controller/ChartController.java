@@ -40,7 +40,7 @@ public class ChartController {
 
 		// replace regex
 		for (int i = 0; i < paths.size(); ++i) {
-			paths.set(i, paths.get(i).replaceAll("/", "\\"));
+			paths.set(i, paths.get(i).replaceAll("\\\\", "/"));
 		}
 
 		// check option is valid
@@ -51,8 +51,9 @@ public class ChartController {
 		}
 
 		// run python process and wait until end
-		Process process = Runtime.getRuntime().exec(String.format("python ocr.py path=%s option=%s",
-				this.pathsToString(paths), this.optionsToString(options)));
+		String runCommand = String.format("python ocr.py path=%s option=%s", this.pathsToString(paths), this.optionsToString(options));
+		System.out.println(runCommand);
+		Process process = Runtime.getRuntime().exec(runCommand);
 		BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		while (true) {
 			if (br.readLine() == null) {
