@@ -53,10 +53,10 @@ def detect(image, template, ratio):
 
 def get_max_matched_res(image, template):
     fs = []
-    ratio = 0.980
-    for i in range(1, 6 + 1):
-        fs.append(pool2.submit(detect, image, template, ratio))
-        ratio += 0.0005
+    ratio = 1.0
+    # for i in range(1, 6 + 1):
+    fs.append(pool2.submit(detect, image, template, ratio))
+        # ratio += 0.0005
 
     max_template_match_val  = -1
     max_template_match_loc = -1
@@ -122,7 +122,7 @@ def process_and_get_arr(image, file_name, header, table_w, table_h):
         w *= 2
         h *= 2
 
-        if w < table_w - 10:
+        if w < table_w - 10 and h > 5:
             cv2.rectangle(table_copy, (x, y), (x + w, y + h), (0, 0, 255), 2)
             x += table_x
             y += table_y
