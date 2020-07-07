@@ -78,14 +78,43 @@ def get_table(image, file_name, header, table_w, table_h):
     table_x = loc[0]
     table_y = loc[1] + h
     table = img[table_y:table_y+table_h, table_x:table_x+table_w]
+    table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    return table
 
 
+def table_to_arr(table, file_name, white_list = ''):
+    # ocr
+    ocr_res = pytesseract.image_to_string(table, config='-psm 6 digits') # ver 3
+    # ocr_res = pytesseract.image_to_string(table, config='--psm 6 --oem 0') # ver 4
+    # ocr_res = pytesseract.image_to_string(table, config='--psm 6 tessedit_char_whitelist=0123456789.-')
+    # ocr_res = pytesseract.image_to_string(table, config='--psm 6 tessedit_char_whitelist=0123456789.-' + white_list)
 
+    # split ocr result by line & space
+    sp = ocr_res.split('\n')
+    arr = []
+    for s in sp:
+        if len(s.strip()) != 0:
+            sp = s.split(' ')
+            line_arr = []
+            for ns in sp:
+                if ns.startswith('.'):
+                    ns = ns.replace('.', '-', 1)
+                line_arr.append(ns)
+            arr.append(line_arr)
+            
+    # save result to file
+    if os.path.exists ('result') == 0:
+        os.mkdir('result')
+    sp = file_name.split('.')
+    file = open('result/' + sp[0] + '.txt', mode='wt', encoding='utf-8')
+    for line in arr:
+        for ns in line:
+            file.write(ns + ' ')
+        file.write('\n')
+    file.close()
 
-
-
-
-    proc = cv2.resize(table, dsize=(0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
+    # detect x, y position using contour
+    proc = cv2.resize(table, dsize=(0, 0), fx=0.25, fy=0.25, interpolation=cv2.INTER_CUBIC)
     proc = cv2.cvtColor(proc, cv2.COLOR_BGR2GRAY)
     th, proc =  cv2.threshold(proc, 190, 255, cv2.THRESH_BINARY)
     proc = cv2.bitwise_not(proc)
@@ -93,26 +122,21 @@ def get_table(image, file_name, header, table_w, table_h):
     proc = cv2.dilate(proc, kernel, iterations=1)
     contours, hierachy = cv2.findContours(proc, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     table_copy = table.copy()
+    table_h, table_w, table_ch = table_copy.shape
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
-        x *= 2
-        y *= 2
-        w *= 2
-        h *= 2
+        x *= 4
+        y *= 4
+        w *= 4
+        h *= 4
 
         if w < table_w - 10:
-            cv2.rectangle(table_copy, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            cv2.rectangle(table_copy, (x, y), (x + w, y + h), (0, 0, 255), 2)
+            print('' + str(x) + ', ' + str(y) + ', ' + str(w) + ', ' + str(h))
     
     cv2.imshow('proc', proc)
     cv2.imshow('table_copy', table_copy)
     cv2.waitKey(0)
-
-
-
-
-
-
-
 
     # pre-process image if options exist
     if os.path.exists ('progress') == 0:
@@ -133,62 +157,7 @@ def get_table(image, file_name, header, table_w, table_h):
         elif option == 'invert':
             print('invert')
         i += 1
-
-    table = cv2.resize(table, dsize=(0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-    return table
-
-
-def table_to_arr(table, file_name, white_list = ''):
-    ocr_res = pytesseract.image_to_string(table, config='-psm 6 digits') # ver 3
-    # ocr_res = pytesseract.image_to_string(table, config='--psm 6 --oem 0') # ver 4
-    # ocr_res = pytesseract.image_to_string(table, config='--psm 6 tessedit_char_whitelist=0123456789.-')
-    # ocr_res = pytesseract.image_to_string(table, config='--psm 6 tessedit_char_whitelist=0123456789.-' + white_list)
-    sp = ocr_res.split('\n')
-    arr = []
-    for s in sp:
-        if len(s.strip()) != 0:
-            sp = s.split(' ')
-            line_arr = []
-            for ns in sp:
-                if ns.startswith('.'):
-                    ns = ns.replace('.', '-', 1)
-                line_arr.append(ns)
-            arr.append(line_arr)
-            
-    if os.path.exists ('result') == 0:
-        os.mkdir('result')
-    sp = file_name.split('.')
-    file = open('result/' + sp[0] + '.txt', mode='wt', encoding='utf-8')
-    for line in arr:
-        for ns in line:
-            file.write(ns + ' ')
-        file.write('\n')
-    file.close()
     return arr
-
-
-# def table_to_arr_2(table, file_name, row, col, white_list = ''):
-#     height, width, channel = table.shape
-#     cell_width = int(width / row)
-#     cell_height = int(height / col)
-
-#     cfs = []
-#     for y in range(cell_height, height + 1, cell_height):
-#         for x in range(cell_width, width + 1, cell_width):
-#             print(x - cell_width)
-#             print(y - cell_height)
-#             print(x)
-#             print(y)
-#             print()
-#             cell = table[y - cell_height:y, x - cell_width:x]
-#             cv2.imshow('cell', cell)
-#             cv2.waitKey(0)
-#             # cfs.append(pool.submit(ocr_cell, cell))
-
-#     arr = []
-#     for f in cfs:
-#         f.result()
-#     return
 
 
 def ocr_cell(cell):
@@ -310,10 +279,6 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
         for i in range(0, 5 + 1):
             g_var['img_pef_pchg_lv' + str(i + 1)] = arr[15][i]
 
-        # for ar in arr:
-        #     for ns in ar:
-        #         print(ns)
-        #     print()
         type01_img_cnt += 1
         pass
 
@@ -395,11 +360,6 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
         # pef lsec % chg
         for i in range(0, 8 + 1):
             g_var['img_pef_pchg_lv' + str(i + 1)] = arr[15][i]
-
-        # for ar in arr:
-        #     for ns in ar:
-        #         print(ns)
-        #     print()
 
         type02_img_cnt += 1
         pass
@@ -622,10 +582,6 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
         g_var['img_rawf_pre'] = arr[37][0]
         # resistence section start
 
-        # for ar in arr:
-        #     for ns in ar:
-        #         print(ns)
-        #     print()
         type04_img_cnt += 1
         pass
 
@@ -696,10 +652,6 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
         i += 1
         g_var['img_mvv_pred'] = arr[i][0]
 
-        # for ar in arr:
-        #     for ns in ar:
-        #         print(ns)
-        #     print()
         type05_img_cnt += 1
         pass
 
@@ -807,10 +759,6 @@ def process_chart_and_get_v_gar(cur_before_image_file_path):
         i += 1
         g_var['img_mvv_pred'] = arr[i][0]
 
-        # for ar in arr:
-        #     for ns in ar:
-        #         print(ns)
-        #     print()
         type06_img_cnt += 1
         pass
 
