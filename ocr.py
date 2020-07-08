@@ -126,8 +126,31 @@ def process_and_get_arr(image, file_name, header, table_w, table_h, type07 = Fal
             'contour': contour
         })
 
-    sotred_contour_jsons.sort(key=lambda k: int(k['x']))
-    sotred_contour_jsons.sort(key=lambda k: int(k['y']))
+    # sotred_contour_jsons.sort(key=lambda json: int(json['x']))
+    sotred_contour_jsons.sort(key=lambda json: int(json['y']))
+
+    # merge criteria y range
+    y_merged_1d = []
+    y_merged_2d = []
+    before_y = sotred_contour_jsons[0]['y']
+    for json in sotred_contour_jsons:
+        if (int(json['y']) - before_y) <= 3:
+            y_merged_1d.append(json)
+        else:
+            y_merged_1d.sort(key=lambda json: int(json['x']))
+            y_merged_2d.append(y_merged_1d)
+            y_merged_1d = []
+            y_merged_1d.append(json)
+        before_y = json['y']
+
+    y_merged_1d.sort(key=lambda json: int(json['x']))
+    y_merged_2d.append(y_merged_1d)
+
+    sotred_contour_jsons = []
+    for y_merged_1d in y_merged_2d:
+        for json in y_merged_1d:
+            sotred_contour_jsons.append(json)
+    # merge end
 
     i = 0
     for json in sotred_contour_jsons:
@@ -153,14 +176,14 @@ def process_and_get_arr(image, file_name, header, table_w, table_h, type07 = Fal
             print(json)
             ocr_position_value_res.append(json)
             cv2.imshow('table_copy', table_copy)
-            cv2.waitKey(0)
+            cv2.waitKey(50)
             i += 1
             # print('' + str(x) + ', ' + str(y) + ', ' + str(w) + ', ' + str(h))
     
     cv2.imshow('proc', proc)
     cv2.imshow('table_copy', table_copy)
     cv2.imshow('image', image)
-    cv2.waitKey(0)
+    cv2.waitKey(10)
             
     # save result to file
     if os.path.exists ('result') == 0:
