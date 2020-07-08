@@ -175,15 +175,15 @@ def process_and_get_arr(image, file_name, header, table_w, table_h, type07 = Fal
             }
             print(json)
             ocr_position_value_res.append(json)
-            cv2.imshow('table_copy', table_copy)
-            cv2.waitKey(50)
+            # cv2.imshow('table_copy', table_copy)
+            # cv2.waitKey(50)
             i += 1
             # print('' + str(x) + ', ' + str(y) + ', ' + str(w) + ', ' + str(h))
     
-    cv2.imshow('proc', proc)
-    cv2.imshow('table_copy', table_copy)
-    cv2.imshow('image', image)
-    cv2.waitKey(10)
+    # cv2.imshow('proc', proc)
+    # cv2.imshow('table_copy', table_copy)
+    # cv2.imshow('image', image)
+    # cv2.waitKey(10)
             
     # save result to file
     if os.path.exists ('result') == 0:
